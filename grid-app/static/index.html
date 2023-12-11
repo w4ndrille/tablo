@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Grid</title>
+		<link rel="icon" href="favicon.png">
+		<link href="style.css" rel="stylesheet" />
+		<link href="xterm/xterm.js/xterm.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<div class="context-menu">
+			<div class="context-menu-item copy">Copy</div>
+			<div class="context-menu-item cut">Cut</div>
+			<div class="context-menu-item paste">Paste</div>
+			<div class="context-menu-item paste-as-value">Paste as value</div>
+			<div class="context-menu-item hide column-only insert-column-left">Insert column left</div>
+			<div class="context-menu-item hide column-only insert-column-right">Insert column right</div>
+			<div class="context-menu-item hide column-only delete-column">Delete column</div>
+			<div class="context-menu-item hide row-only insert-row-above">Insert row above</div>
+			<div class="context-menu-item hide row-only insert-row-below">Insert row below</div>
+			<div class="context-menu-item hide row-only delete-row">Delete row</div>
+			<div class="context-menu-item sort-asc">Sort ascending</div>
+			<div class="context-menu-item sort-desc">Sort descending</div>
+			<div class="context-menu-item sheet-size">Change sheet size</div>
+			<div class="context-menu-item dropdown">
+				Pandas
+				<div class="context-menu-submenu">
+					<div class="context-menu-item codegen" data-method='pandas-get-data'>Get data</div>
+					<div class="context-menu-item codegen" data-method='pandas-plot-data'>Plot</div>
+					<div class="context-menu-item codegen" data-method='pandas-plot-hist-data'>Plot histogram</div>
+					<div class="context-menu-item codegen" data-method='pandas-average'>Average</div>
+					<div class="context-menu-item codegen" data-method='pandas-std-deviation'>Std. deviation</div>
+					<div class="context-menu-item codegen" data-method='pandas-variance'>Variance</div>
+					<div class="context-menu-item codegen" data-method='pandas-quartile-q1'>Quartile (25th)</div>
+					<div class="context-menu-item codegen" data-method='pandas-quartile-q3'>Quartile (75th)</div>
+					<div class="context-menu-item codegen" data-method='pandas-frequency-table'>Frequency table</div>
+				</div>
+			</div>
+		</div>
+		<header>
+			<div class="workspaceName"><input type="hidden" name='id' value='' /><input type="text" name="workspaceName" value="" /></div>
+			<div-menu>
+				<menu-item> 
+					File
+					<menu-list>
+						<menu-item class='load-csv'>Load CSV<input type='file' class="csv-input" /></menu-item>
+						<menu-item class='export-csv'>Export as CSV</menu-item>
+						<menu-item class='save-workspace'>Save workspace</menu-item>
+						<menu-item class='upload-file'>Upload file<input type='file' class="file-input" /></menu-item>
+						<menu-item class='close-workspace'><a href="#">Close workspace</a></menu-item>
+					</menu-list>
+				</menu-item>
+				<menu-item>
+					Plot
+					<menu-list>
+						<menu-item class='plot-scatter'>Scatter</menu-item>
+						<menu-item class='plot-line'>Line</menu-item>
+						<menu-item class='plot-histogram'>Histogram</menu-item>
+					</menu-list>
+				</menu-item>
+				<menu-item> 
+					Plots
+					<menu-list class="plot-list">
+							<menu-item class='no-plots'>No plots</menu-item>
+					</menu-list>
+				</menu-item>
+				<menu-item class='code'>  
+					Code
+				</menu-item>
+				<menu-item>
+					Help
+					<menu-list>
+						<a target="blank" href="https://github.com/ricklamers/gridstudio/wiki"><menu-item class='docs'>Documentation</menu-item></a>
+						<a target="blank" href="https://join.slack.com/t/grid-community/shared_invite/enQtNDA2OTkyMTg0OTI5LTE5OThjZDE3NWZjYTllMDIxMDQzYTRlNDhlOGRiMTY0MjQ5ZmEzOTQ2YTEwNDI3MzFiMmFiYzVmMTk1ZmIyMGM"><menu-item class='slack'>Slack community</menu-item></a>
+					</menu-list>
+				</menu-item>
+				<div class="save-status">Saved.</div>
+			</div-menu>
+			<div class="formula-bar">
+				<input type="text" />
+			</div>
+		</header>
+		
+		<div class="main-body">
+			<div class="left-panel">
+				<div-sheet>
+					<div class="sheet-sizer"></div>
+				</div-sheet>
+				<div class="sheet-tabs">
+					<div class="sheet-tabs-holder">
+
+					</div>
+					<div class="add-sheet">
+						<img src="image/plus.svg" width="12px" />
+					</div>
+				</div>
+				<div class="progress-indicator"><div class="progress-indicator-inner"></div></div>
+			</div>
+			<div class='code-editor'>
+				<div id="editor">
+					<div class="file-editor">
+						<div class="file-name-holder"><div class="file-name"></div><div class="close" style="display:none"><img width="12px" src="image/cross.svg"/></div></div>
+						<div id="editor-ace"></div>
+					</div>
+				</div>
+				
+				<div class="dev-tabs">
+					<div class="tabs">
+						<div class="tab" data-tab='filemanager'>Files</div>
+						<div class="tab" data-tab='plots'>Plots</div>
+						<div class="tab current" data-tab='terminal'>Terminal</div>
+						<div data-tab='console' class="tab">Python out</div>
+					</div>
+					<div class="view terminal" id="terminal-container"></div>
+					<div class="view console" style="display:none;"></div>
+					<div class="view plots" style="display:none;">
+						<div class="plot-navigator">
+							<div class="plot-left"></div>
+							<div class="plot-counter">0/0</div>
+							<div class="plot-right"></div>
+						</div>
+						<div class="plot-holder">
+
+						</div>
+					</div>
+					<div class="view filemanager" style="display:none;">
+						<div class="path"><div class='files-home'><img src="image/home.svg"/></div><input type="text" value="" /></div>
+						<div class="files-view">
+							<div class="files"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="js/libs/es6-promise.auto.min.js"></script>
+		<script src="js/libs/fetch.min.js"></script>
+		<script src="js/libs/jquery-3.3.1.min.js"></script>
+		<script src="js/libs/plotly-finance.min.js" charset="utf-8"></script>
+		<script src="xterm/dist/main.js"></script>
+		<script src="js/editor/ace.js"></script>
+		<script src="js/editor.js"></script>
+		<script src="js/filemanager.js"></script>
+		<script src="js/testmanager.js"></script>
+		<script src="js/ws.js"></script>
+		<script src="js/codegen.js"></script>
+		<script src="js/app.js"></script>
+	</body>
+</html>
