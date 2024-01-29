@@ -1,0 +1,28 @@
+
+# pyspread
+
+*.sig
+
+#-----------------
+
+*.pyc
+dist
+build
+MANIFEST
+
+*.psproj
+.cache
+pyspread.egg-info
+
+# editors
+.idea/
+.spyderproject
+.spyderworkspace
+
+
+public/
+.sass-cache/
+
+# coverage
+*.coverage
+htmlcov
