@@ -490,7 +490,7 @@ class Grid(QTableView):
                 self.current = self.row, self.column + 1
             else:
                 self.current = self.row + 1, self.column
-        elif event.key() == Qt.Key.Key_Delete:
+        elif event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
             self.main_window.workflows.delete()
         elif (event.key() == Qt.Key.Key_Escape
               and self.editTriggers()
