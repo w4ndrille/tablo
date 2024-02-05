@@ -1,9 +1,6 @@
 À transférer dans issues
 
-- [ ] Tracer de modèles : 
-	- [ ] Linéaire
-	- [ ] Affine
-	- [ ] Parabole
+- [ ] Tracer de modèles :
 	- [ ] Exponentielle
 	- [ ] Sigmoïde
 	- [ ] Puissance
