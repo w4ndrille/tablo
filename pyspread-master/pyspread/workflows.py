@@ -97,6 +97,7 @@ try:
     from pyspread.cli import PyspreadArgumentParser
 except ImportError:
     from cli import PyspreadArgumentParser
+
 class Workflows:
     """Workflow container class"""
 
