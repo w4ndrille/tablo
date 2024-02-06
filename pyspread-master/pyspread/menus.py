@@ -76,13 +76,25 @@ class MenuBar(QMenuBar):
         self.macro_menu = MacroMenu(self, actions)
         self.help_menu = HelpMenu(self, actions)
 
+        """Menu personnalisé"""
+        self.graph_menu = GraphMenu(self, actions)
+
         self.addMenu(self.file_menu)
         self.addMenu(self.edit_menu)
         self.addMenu(self.view_menu)
         self.addMenu(self.format_menu)
         self.addMenu(self.macro_menu)
+        """On met notre menu avant le menu aide"""
+        self.addMenu(self.graph_menu)
+
         self.addMenu(self.help_menu)
 
+class GraphMenu(QMenu):
+    def __init__(self, parent: QWidget, actions : MainWindowActions):
+
+        super().__init__('&Graph', parent)
+        self.parent = parent
+        self.addAction(actions.newWindows)
 
 class FileMenu(QMenu):
     """File menu for the main menubar"""

@@ -52,6 +52,9 @@ except ImportError:
     from lib.attrdict import AttrDict
 
 
+
+
+
 class Action(QAction):
     """A convenience class for creating a `QAction`
 
@@ -116,6 +119,18 @@ class MainWindowActions(AttrDict):
 
         self.disable_unavailable()
 
+        """Ajout"""
+        self.createGraphActions()
+
+
+    """ Perso """
+    def createGraphActions(self):
+
+        self.newWindows = Action(self.parent, '&newWindows',
+                                 self.parent.workflows.new_window,
+                                 icon=Icon.new,
+                                 shortcut='Ctrl+h' if self.shortcuts else "",
+                                 statustip='Create a new graph')
     def create_file_actions(self):
         """actions for File menu"""
 
@@ -1017,3 +1032,9 @@ class SpellTextEditActions(AttrDict):
                                           self.parent.show_line_numbers,
                                           checkable=True,
                                           statustip='Show/hide line numbers')
+
+
+class GraphWindowActions(AttrDict):
+    """Actions for the graph windows"""
+
+    p = 8

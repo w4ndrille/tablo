@@ -59,7 +59,7 @@ try:
     from pyspread.toolbar import (MainToolBar, FindToolbar, FormatToolbar,
                                   MacroToolbar)
     from pyspread.actions import MainWindowActions
-    from pyspread.workflows import Workflows
+
     from pyspread.widgets import Widgets
     from pyspread.dialogs import (ApproveWarningDialog, PreferencesDialog,
                                   ManualDialog, TutorialDialog,
@@ -79,7 +79,7 @@ except ImportError:
     from menus import MenuBar
     from toolbar import MainToolBar, FindToolbar, FormatToolbar, MacroToolbar
     from actions import MainWindowActions
-    from workflows import Workflows
+
     from widgets import Widgets
     from dialogs import (ApproveWarningDialog, PreferencesDialog, ManualDialog,
                          TutorialDialog, PrintAreaDialog, PrintPreviewDialog)
@@ -95,7 +95,7 @@ LICENSE = "GNU GENERAL PUBLIC LICENSE Version 3"
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 
 
-class MainWindow(QMainWindow):
+class GraphWindow(QMainWindow):
     """Pyspread main window"""
 
     gui_update = pyqtSignal(dict)
@@ -114,19 +114,20 @@ class MainWindow(QMainWindow):
         self.prevent_updates = False  # Prevents setData updates in grid
 
         self.settings = Settings(self, reset_settings=default_settings)
-        self.workflows = Workflows(self)
+
         self.undo_stack = QUndoStack(self)
+
         self.refresh_timer = QTimer()
 
         self._init_widgets()
-
+        """
         self.main_window_actions = MainWindowActions(self)
         self.main_window_toolbar_actions = MainWindowActions(self,
                                                              shortcuts=False)
-
+        """
         self._init_window()
-        self._init_toolbars()
-
+        #self._init_toolbars()
+        """
         self.settings.restore()
         if self.settings.signature_key is None:
             self.settings.signature_key = genkey()
@@ -157,13 +158,13 @@ class MainWindow(QMainWindow):
             else:
                 msg = f"File '{filepath}' could not be opened."
                 self.statusBar().showMessage(msg)
-
+        """
     def _init_window(self):
         """Initialize main window components"""
 
         self.setWindowTitle(APP_NAME)
         self.setWindowIcon(Icon.pyspread)
-
+        """
         # Safe mode widget
         self.safe_mode_widget = QSvgWidget(str(IconPath.safe_mode),
                                            self.statusBar())
@@ -188,7 +189,7 @@ class MainWindow(QMainWindow):
         self.main_window_actions.approve.setEnabled(False)
 
         self.setMenuBar(MenuBar(self))
-
+        """
     def resizeEvent(self, event: QEvent):
         """Overloaded, aborts on self._loading
 
@@ -207,10 +208,11 @@ class MainWindow(QMainWindow):
         :param event: Any QEvent
 
         """
-
+        """ Pour éviter les conflits
         if event:
             event.ignore()
         self.workflows.file_quit()  # has @handle_changed_since_save decorator
+        """
 
     def _init_widgets(self):
         """Initialize widgets"""

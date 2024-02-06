@@ -31,6 +31,7 @@ from contextlib import contextmanager
 from copy import copy
 import csv
 import io
+
 import numpy
 import os.path
 from pathlib import Path
@@ -90,7 +91,12 @@ except ImportError:
         (linecount, file_progress_gen, ProgressDialogCanceled)
     from model.model import CellAttribute
 
-
+#Add
+from grap_window import GraphWindow
+try:
+    from pyspread.cli import PyspreadArgumentParser
+except ImportError:
+    from cli import PyspreadArgumentParser
 class Workflows:
     """Workflow container class"""
 
@@ -98,6 +104,15 @@ class Workflows:
 
     def __init__(self, main_window):
         self.main_window = main_window
+
+# Ajout de notre part
+    def new_window(self):
+        parser = PyspreadArgumentParser()
+        args, _ = parser.parse_known_args()
+
+        graph_window = GraphWindow(args.file, default_settings=args.default_settings)
+
+        graph_window.show()
 
     @contextmanager
     def busy_cursor(self):
