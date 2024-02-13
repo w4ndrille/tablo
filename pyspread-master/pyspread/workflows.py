@@ -2003,3 +2003,4 @@ class Workflows:
         command = commands.SetCellCode(code, grid.model, index, description)
 
         self.main_window.undo_stack.push(command)
+

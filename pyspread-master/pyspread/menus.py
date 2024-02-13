@@ -48,10 +48,10 @@ except ImportError:
     matplotlib_figure = None
 
 try:
-    from pyspread.actions import MainWindowActions
+    from pyspread.actions import MainWindowActions, GraphWindowActions
     from pyspread.icons import Icon
 except ImportError:
-    from actions import MainWindowActions
+    from actions import MainWindowActions, GraphWindowActions
     from icons import Icon
 
 
@@ -89,6 +89,27 @@ class MenuBar(QMenuBar):
 
         self.addMenu(self.help_menu)
 
+
+#Graph Menu Bar for the graph window
+class GraphMenuBar(QMenuBar):
+    def __init__(self, graph_window: QWidget):
+        """
+        :param graph_window: Application graph window
+
+        """
+
+        super().__init__()
+
+        self.graph_window = graph_window
+        actions = graph_window.graph_window_actions
+        self.help_menu = HelpMenuG(self, actions)
+        #self.NomDuMenu = NomClass(self, actions)
+
+
+        #self.addMenu(self.NOMDUMENU)
+        self.addMenu(self.help_menu)
+
+#WARNING This is the graph menu inside the Main Window
 class GraphMenu(QMenu):
     def __init__(self, parent: QWidget, actions : MainWindowActions):
 
@@ -320,6 +341,25 @@ class HelpMenu(QMenu):
         self.addAction(actions.dependencies)
         self.addSeparator()
         self.addAction(actions.about)
+class HelpMenuG(QMenu):
+    """Help menu for the main menubar"""
+
+    def __init__(self, parent: QWidget, actions: GraphWindowActions):
+        """
+        :param parent: Parent widget
+        :param actions: Main window actions
+
+        """
+
+        super().__init__('&Help', parent)
+
+        self.addAction(actions.manual)
+        self.addAction(actions.tutorial)
+        self.addSeparator()
+        self.addAction(actions.dependencies)
+        self.addSeparator()
+        self.addAction(actions.about)
+
 
 
 class FileHistoryMenu(QMenu):

@@ -40,7 +40,7 @@ from pathlib import Path
 from PyQt6.QtCore import Qt, pyqtSignal, QEvent, QTimer, QRectF
 from PyQt6.QtWidgets import (QWidget, QMainWindow, QApplication,
                              QMessageBox, QDockWidget, QVBoxLayout,
-                             QStyleOptionViewItem, QSplitter)
+                             QStyleOptionViewItem, QSplitter, QDialog, QGraphicsItem )
 try:
     from PyQt6.QtSvgWidgets import QSvgWidget
 except ImportError:
@@ -52,14 +52,13 @@ try:
     from pyspread.__init__ import VERSION, APP_NAME
     from pyspread.settings import Settings, WEB_URL
     from pyspread.icons import Icon, IconPath
-    from pyspread.grid import Grid, TableChoice
+    from pyspread.graph import Graph
     from pyspread.grid_renderer import painter_save
     from pyspread.entryline import Entryline
-    from pyspread.menus import MenuBar
-    from pyspread.toolbar import (MainToolBar, FindToolbar, FormatToolbar,
-                                  MacroToolbar)
+    from pyspread.menus import GraphMenuBar
+    from pyspread.toolbar import GraphMainToolBar
     from pyspread.actions import MainWindowActions
-
+    from pyspread.graph_workflows import GraphWorkflows
     from pyspread.widgets import Widgets
     from pyspread.dialogs import (ApproveWarningDialog, PreferencesDialog,
                                   ManualDialog, TutorialDialog,
@@ -73,13 +72,13 @@ except ImportError:
     from __init__ import VERSION, APP_NAME
     from settings import Settings, WEB_URL
     from icons import Icon, IconPath
-    from grid import Grid, TableChoice
+    from graph import Graph
     from grid_renderer import painter_save
     from entryline import Entryline
-    from menus import MenuBar
-    from toolbar import MainToolBar, FindToolbar, FormatToolbar, MacroToolbar
-    from actions import MainWindowActions
-
+    from menus import GraphMenuBar
+    from toolbar import GraphMainToolBar
+    from actions import GraphWindowActions
+    from graph_workflows import GraphWorkflows
     from widgets import Widgets
     from dialogs import (ApproveWarningDialog, PreferencesDialog, ManualDialog,
                          TutorialDialog, PrintAreaDialog, PrintPreviewDialog)
@@ -114,57 +113,25 @@ class GraphWindow(QMainWindow):
         self.prevent_updates = False  # Prevents setData updates in grid
 
         self.settings = Settings(self, reset_settings=default_settings)
-
+        self.workflows = GraphWorkflows(self) #Workflows variable doen't change for code clarity
         self.undo_stack = QUndoStack(self)
-
         self.refresh_timer = QTimer()
 
         self._init_widgets()
-        """
-        self.main_window_actions = MainWindowActions(self)
-        self.main_window_toolbar_actions = MainWindowActions(self,
+
+        self.graph_window_actions = GraphWindowActions(self)
+        self.graph_window_toolbar_actions = GraphWindowActions(self,
                                                              shortcuts=False)
-        """
+
         self._init_window()
-        #self._init_toolbars()
-        """
-        self.settings.restore()
-        if self.settings.signature_key is None:
-            self.settings.signature_key = genkey()
+        self._init_toolbars()
 
-        # Print area for print requests
-        self.print_area = None
-
-        # Update recent files in the file menu
-        self.menuBar().file_menu.history_submenu.update()
-
-        # Update toolbar toggle checkboxes
-        self.update_action_toggles()
-
-        # Update the GUI so that everything matches the model
-        cell_attributes = self.grid.model.code_array.cell_attributes
-        attributes = cell_attributes[self.grid.current]
-        self.on_gui_update(attributes)
-
-        self._last_focused_grid = self.grid
-
-        self._loading = False
-        self._previous_window_state = self.windowState()
-
-        # Open initial file if provided by the command line
-        if filepath is not None:
-            if self.workflows.filepath_open(filepath):
-                self.workflows.update_main_window_title()
-            else:
-                msg = f"File '{filepath}' could not be opened."
-                self.statusBar().showMessage(msg)
-        """
     def _init_window(self):
         """Initialize main window components"""
-
-        self.setWindowTitle(APP_NAME)
+        self.resize(400,330) # initial format
+        self.setWindowTitle("Graph")
         self.setWindowIcon(Icon.pyspread)
-        """
+
         # Safe mode widget
         self.safe_mode_widget = QSvgWidget(str(IconPath.safe_mode),
                                            self.statusBar())
@@ -173,130 +140,38 @@ class GraphWindow(QMainWindow):
         self.statusBar().addPermanentWidget(self.safe_mode_widget)
         self.safe_mode_widget.hide()
 
-        # Selection mode widget
-        self.selection_mode_widget = QSvgWidget(str(IconPath.selection_mode),
-                                                self.statusBar())
-        msg = "Selection mode active. Cells cannot be edited.\n" + \
-              "Selecting cells adds relative references into the entry " + \
-              "line. Additionally pressing `Meta` switches to absolute " + \
-              "references.\nEnd selection mode by clicking into the entry " + \
-              "line or with `Esc` when focusing the grid."
-        self.selection_mode_widget.setToolTip(msg)
-        self.statusBar().addPermanentWidget(self.selection_mode_widget)
-        self.selection_mode_widget.hide()
+        self.setMenuBar(GraphMenuBar(self))
 
-        # Disable the approve field menu button
-        self.main_window_actions.approve.setEnabled(False)
-
-        self.setMenuBar(MenuBar(self))
-        """
     def resizeEvent(self, event: QEvent):
         """Overloaded, aborts on self._loading
-
         :param event: Resize event
-
         """
-
         if self._loading:
             return
-
         super().resizeEvent(event)
 
-    def closeEvent(self, event: QEvent = None):
-        """Overloaded, allows saving changes or canceling close
 
-        :param event: Any QEvent
-
-        """
-        """ Pour éviter les conflits
-        if event:
-            event.ignore()
-        self.workflows.file_quit()  # has @handle_changed_since_save decorator
-        """
 
     def _init_widgets(self):
         """Initialize widgets"""
 
         self.widgets = Widgets(self)
-
-        self.entry_line = Entryline(self)
-
-        self.vsplitter = QSplitter(Qt.Orientation.Vertical, self)
-        self.hsplitter_1 = QSplitter(Qt.Orientation.Horizontal, self)
-        self.hsplitter_2 = QSplitter(Qt.Orientation.Horizontal, self)
-
-        # Set up the table choice first
-        _no_tables = self.settings.shape[2]
-        self.table_choice = TableChoice(self, _no_tables)
-
         # We have one main view that is used as default view
-        self.grid = Grid(self)
-        # Further views of the grid
-        self.grid_2 = Grid(self, self.grid.model)
-        self.grid_3 = Grid(self, self.grid.model)
-        self.grid_4 = Grid(self, self.grid.model)
-
-        self.grids = [self.grid, self.grid_2, self.grid_3, self.grid_4]
-
-        self.macro_panel = MacroPanel(self, self.grid.model.code_array)
-
+        self.graph = Graph(self)
         self.main_panel = QWidget(self)
-
-        self.entry_line_dock = QDockWidget("Entry Line", self)
-        self.entry_line_dock.setObjectName("Entry Line Panel")
-        self.entry_line_dock.setWidget(self.entry_line)
-        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea,
-                           self.entry_line_dock)
-        self.resizeDocks([self.entry_line_dock], [10],
-                         Qt.Orientation.Horizontal)
-
-        self.macro_dock = QDockWidget("Macros", self)
-        self.macro_dock.setObjectName("Macro Panel")
-        self.macro_dock.setWidget(self.macro_panel)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea,
-                           self.macro_dock)
 
         self.central_layout = QVBoxLayout(self.main_panel)
         self._layout()
 
-        self.entry_line_dock.installEventFilter(self)
-        self.macro_dock.installEventFilter(self)
-
-        QApplication.instance().focusChanged.connect(self.on_focus_changed)
+        #QApplication.instance().focusChanged.connect(self.on_focus_changed)
         self.gui_update.connect(self.on_gui_update)
         self.refresh_timer.timeout.connect(self.on_refresh_timer)
 
-        # Connect widgets only to first grid
-        self.widgets.text_color_button.colorChanged.connect(
-            self.grid.on_text_color)
-        self.widgets.background_color_button.colorChanged.connect(
-            self.grid.on_background_color)
-        self.widgets.line_color_button.colorChanged.connect(
-            self.grid.on_line_color)
-        self.widgets.font_combo.fontChanged.connect(self.grid.on_font)
-        self.widgets.font_size_combo.fontSizeChanged.connect(
-            self.grid.on_font_size)
-
     def _layout(self):
-        """Layouts for main window"""
+        """Set all the layout in the Graph Window"""
 
-        self.central_layout.addWidget(self.vsplitter)
-        self.central_layout.addWidget(self.grid.table_choice)
+        self.setCentralWidget(self.graph)
 
-        self.vsplitter.addWidget(self.hsplitter_1)
-        self.vsplitter.addWidget(self.hsplitter_2)
-
-        self.hsplitter_1.addWidget(self.grid)
-        self.hsplitter_1.addWidget(self.grid_2)
-        self.hsplitter_2.addWidget(self.grid_3)
-        self.hsplitter_2.addWidget(self.grid_4)
-
-        self.vsplitter.setSizes([1, 0])
-        self.hsplitter_1.setSizes([1, 0])
-        self.hsplitter_2.setSizes([1, 0])
-
-        self.main_panel.setLayout(self.central_layout)
-        self.setCentralWidget(self.main_panel)
 
     def eventFilter(self, source: QWidget, event: QEvent) -> bool:
         """Overloaded event filter for handling QDockWidget close events
@@ -321,16 +196,13 @@ class GraphWindow(QMainWindow):
     def _init_toolbars(self):
         """Initialize the main window toolbars"""
 
-        self.main_toolbar = MainToolBar(self)
-        self.macro_toolbar = MacroToolbar(self)
+        self.main_toolbar = GraphMainToolBar(self)
+        """self.macro_toolbar = MacroToolbar(self)
         self.find_toolbar = FindToolbar(self)
-        self.format_toolbar = FormatToolbar(self)
+        self.format_toolbar = FormatToolbar(self)"""
 
         self.addToolBar(self.main_toolbar)
-        self.addToolBar(self.macro_toolbar)
-        self.addToolBar(self.find_toolbar)
-        self.addToolBarBreak()
-        self.addToolBar(self.format_toolbar)
+
 
     def update_action_toggles(self):
         """Updates the toggle menu check states"""

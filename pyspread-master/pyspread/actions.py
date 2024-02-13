@@ -1036,5 +1036,45 @@ class SpellTextEditActions(AttrDict):
 
 class GraphWindowActions(AttrDict):
     """Actions for the graph windows"""
+    def __init__(self, parent :QWidget, shortcuts: bool = True):
+        super().__init__()
+        self.parent = parent
+        self.shortcuts = shortcuts
 
-    p = 8
+        self.create_modelisation_actions()
+        self.create_help_actions()
+
+        #Add here every actions bars (function) you want to add to the projet
+
+    def create_modelisation_actions(self):
+        self.new_model = Action(self.parent, "&New Model",
+                                self.parent.workflows.add_cell(),
+                                icon=Icon.new,
+                                checkable=True,
+                                statustip='Oui')
+    def create_help_actions(self):
+        """actions for Help menu"""
+
+        self.manual = Action(self.parent, "Manual...",
+                             self.parent.on_manual,
+                             icon=Icon.help,
+                             shortcut='F1' if self.shortcuts else "",
+                             statustip='Display the pyspread manual')
+
+        self.tutorial = Action(self.parent, "Tutorial...",
+                               self.parent.on_tutorial,
+                               icon=Icon.tutorial,
+                               statustip='Display a pyspread tutorial')
+
+        self.dependencies = Action(self.parent, "Dependencies...",
+                                   self.parent.on_dependencies,
+                                   icon=Icon.dependencies,
+                                   statustip='List and install dependencies')
+
+        self.about = Action(self.parent, "About pyspread...",
+                            self.parent.on_about,
+                            icon=Icon.pyspread,
+                            statustip='About pyspread',
+                            role=QAction.MenuRole.AboutRole)
+
+

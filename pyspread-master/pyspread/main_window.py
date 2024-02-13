@@ -554,7 +554,7 @@ class MainWindow(QMainWindow):
         dial.exec()
 
     def on_undo(self):
-        """Undo event handler"""
+        """Undo c handler"""
 
         self.undo_stack.undo()
 

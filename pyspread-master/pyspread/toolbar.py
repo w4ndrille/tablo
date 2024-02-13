@@ -53,12 +53,12 @@ except ImportError:
     plotnine = None
 
 try:
-    from pyspread.actions import MainWindowActions, ChartDialogActions
+    from pyspread.actions import MainWindowActions, ChartDialogActions, GraphWindowActions
     from pyspread.icons import Icon
     from pyspread.menus import ToolbarManagerMenu
     from pyspread.widgets import FindEditor
 except ImportError:
-    from actions import MainWindowActions, ChartDialogActions
+    from actions import MainWindowActions, ChartDialogActions, GraphWindowActions
     from icons import Icon
     from menus import ToolbarManagerMenu
     from widgets import FindEditor
@@ -467,3 +467,20 @@ class RChartTemplatesToolBar(ToolBarBase):
             actions.chart_plotnine_geom_bar_1_1.setToolTip(tooltip)
 
         self.addWidget(self.get_manager_button())
+
+
+class GraphMainToolBar(ToolBarBase):
+    def __init__(self, graph_window: QMainWindow):
+        """
+        :param graph_window: Application main window
+
+        """
+
+        self.graph_window = graph_window
+        super().__init__("Main toolbar", graph_window)
+
+        self.setObjectName("Main Toolbar")
+        self._create_toolbar(graph_window.graph_window_toolbar_actions)
+
+    def _create_toolbar(self, actions: GraphWindowActions):
+        self.addAction(actions.new_model)

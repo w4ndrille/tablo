@@ -123,7 +123,6 @@ class Grid(QTableView):
         self.main_window = main_window
 
         shape = main_window.settings.shape
-
         if model is None:
             self.model = GridTableModel(main_window, shape)
         else:
