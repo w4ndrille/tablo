@@ -87,7 +87,7 @@ except ImportError:
     from panels import MacroPanel
     from lib.hashing import genkey
     from model.model import CellAttributes
-
+    import grid
 
 LICENSE = "GNU GENERAL PUBLIC LICENSE Version 3"
 
@@ -99,7 +99,7 @@ class GraphWindow(QMainWindow):
 
     gui_update = pyqtSignal(dict)
 
-    def __init__(self, filepath: Path = Path(),
+    def __init__(self,grid : grid.Grid, filepath: Path = Path(),
                  default_settings: bool = False):
         """
         :param filepath: File path for inital file to be opened
@@ -107,7 +107,11 @@ class GraphWindow(QMainWindow):
 
         """
 
+
         super().__init__()
+
+        #Only the first grid
+        self.grid = grid
 
         self._loading = True  # For initial loading of pyspread
         self.prevent_updates = False  # Prevents setData updates in grid
@@ -183,13 +187,6 @@ class GraphWindow(QMainWindow):
 
         """
 
-        if event.type() == QEvent.Type.Close and isinstance(source,
-                                                            QDockWidget):
-            if source.windowTitle() == "Macros":
-                self.main_window_actions.toggle_macro_dock.setChecked(False)
-            elif source.windowTitle() == "Entry Line":
-                self.main_window_actions.toggle_entry_line_dock.setChecked(
-                    False)
 
         return super().eventFilter(source, event)
 

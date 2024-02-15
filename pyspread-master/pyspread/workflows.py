@@ -111,9 +111,12 @@ class Workflows:
         parser = PyspreadArgumentParser()
         args, _ = parser.parse_known_args()
 
-        graph_window = GraphWindow(args.file, default_settings=args.default_settings)
+
+        #On passe la grille en argument pour avoir accès aux cases
+        graph_window = GraphWindow(self.main_window.grid,args.file, default_settings=args.default_settings)
 
         graph_window.show()
+
 
     @contextmanager
     def busy_cursor(self):
