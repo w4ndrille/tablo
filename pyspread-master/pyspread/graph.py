@@ -61,6 +61,8 @@ class Graph(QWebEngineView):
         self.yValues = []
         #shorting the accesser to data
         self.model = self.parent.grid.model
+        #the figure supporting our model
+        self.fig = go.Figure()
 
 
         self.get_series()
@@ -107,14 +109,12 @@ class Graph(QWebEngineView):
         """
 
 
-        ##zone de test pour QWebEngine
-        x = np.arange(1000)
-        y= x**2
 
-        fig = go.Figure(go.Scatter(x=self.xValues, y=self.yValues,name="Name Scatter"))
+
+        self.fig.add_traces(go.Scatter(x=self.xValues, y=self.yValues,name="Name Scatter"))
 
         #Pour ajouter les légends
-        fig.update_layout(
+        self.fig.update_layout(
             title="Scatter",
             xaxis_title=self.axisLabels[0],
             yaxis_title=self.axisLabels[1],
@@ -122,9 +122,18 @@ class Graph(QWebEngineView):
         )
 
         #permet d'avoir l'écriture scientifique / a enlever si on veut l'écriture simple en mettant ="none"
-        fig.update_yaxes(exponentformat='E')
-        ##
-        self.chart += plotly.offline.plot(fig, output_type='div',include_plotlyjs='cdn')
+        self.fig.update_yaxes(exponentformat='E')
+
+        self.chart += plotly.offline.plot(self.fig, output_type='div',include_plotlyjs='cdn')
         self.chart += '</body></html>'
         self.setHtml(self.chart)
 
+    def update(self):
+        self.chart ="<html><body>"
+
+        x = np.arange(1000)
+        y = x**2
+        self.fig.add_traces(go.Scatter(x=x,y=y))
+        self.chart += plotly.offline.plot(self.fig,output_type='div',include_plotlyjs='cdn')
+        self.chart += '</body></html>'
+        self.setHtml(self.chart)
