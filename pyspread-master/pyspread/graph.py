@@ -22,8 +22,13 @@ from PyQt6.QtCore \
     import (Qt, QAbstractTableModel, QModelIndex, QVariant, QEvent, QSize,
             QRect, QRectF, QItemSelectionModel, QObject, QAbstractItemModel,
             QByteArray, pyqtSignal)
-
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 from lib.attrdict import AttrDict
+#import graphiques
+import numpy as np
+import plotly
+import plotly.graph_objects as go
+
 try:
     import matplotlib
     import matplotlib.figure
@@ -40,7 +45,13 @@ FONTSTYLES = (QFont.Style.StyleNormal,
  Like the grid.py
 """
 
-class Graph(QChartView):
+"""
+FONCTIONNEMENT :
+ 
+
+
+"""
+class Graph(QWebEngineView):
     def __init__(self, parent:QMainWindow, model=None):
         super().__init__()
         self.parent = parent
@@ -65,16 +76,7 @@ class Graph(QChartView):
         Define the main chart and all the legends and axis
         """
         # The main chart which support the series
-        self.chart = QChart()
-        self.chart.legend().setVisible(False)
-
-        #setting up the normal Axis
-        self.axisX.setTickCount(10)
-        self.axisY.setTickCount(10)
-
-        #Possibility to add an axis on the right side for multi-plotting
-        self.chart.addAxis(self.axisX, Qt.AlignmentFlag.AlignBottom)
-        self.chart.addAxis(self.axisY, Qt.AlignmentFlag.AlignLeft)
+        self.chart = '<html><body>'
 
 
     def get_series(self, selectSeriesType : bool = False, colIndexX :int = 0,colIndexY :int = 1):
@@ -112,20 +114,30 @@ class Graph(QChartView):
         """
         n = len(self.series)
 
-        #setting the labels
-        self.axisX.setTitleText(self.axisLabels[0])
-        self.axisY.setTitleText(self.axisLabels[1])
+        ##zone de test pour QWebEngine
+        x = np.arange(1000)
+        y= x**2
 
+        fig = go.Figure(go.Scatter(x=x, y=y,name="Name Scatter"))
+        #Pour ajouter les légends
+        fig.update_layout(
+            title="Scatter",
+            xaxis_title="les x",
+            yaxis_title="les y",
+            legend_title="Legend title",
+            font=dict(
+                family="Courrier New",
+                size =18,
+                color="Red"
+            ),
+        )
 
-        for i in range(n):
-            self.chart.addSeries(self.series[i])
-
-
-
-            self.series[i].attachAxis(self.axisY)
-            self.series[i].attachAxis(self.axisX)
-
-        self.setChart(self.chart)
+        #permet d'avoir l'écriture scientifique / a enlever si on veut l'écriture simple en mettant ="none"
+        fig.update_yaxes(exponentformat='E')
+        ##
+        self.chart += plotly.offline.plot(fig, output_type='div',include_plotlyjs='cdn')
+        self.chart += '</body></html>'
+        self.setHtml(self.chart)
 
 
 
