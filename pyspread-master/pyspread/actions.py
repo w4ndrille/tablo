@@ -1047,11 +1047,11 @@ class GraphWindowActions(AttrDict):
         #Add here every actions bars (function) you want to add to the projet
 
     def create_modelisation_actions(self):
-        self.new_model = Action(self.parent, "&New Model",
-                                self.parent.workflows.add_cell(),
+        self.update = Action(self.parent, "&Update Modelisation",
+                                self.parent.workflows.update,
                                 icon=Icon.new,
                                 checkable=True,
-                                statustip='Oui')
+                                statustip='Update your curves if you added data')
     def create_help_actions(self):
         """actions for Help menu"""
 

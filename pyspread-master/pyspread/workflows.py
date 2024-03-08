@@ -113,7 +113,7 @@ class Workflows:
 
 
         #On passe la grille en argument pour avoir accès aux cases
-        graph_window = GraphWindow(self.main_window.grid,args.file, default_settings=args.default_settings)
+        graph_window = GraphWindow(self.main_window,args.file, default_settings=args.default_settings)
 
         graph_window.show()
 

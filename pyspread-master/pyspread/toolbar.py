@@ -483,4 +483,4 @@ class GraphMainToolBar(ToolBarBase):
         self._create_toolbar(graph_window.graph_window_toolbar_actions)
 
     def _create_toolbar(self, actions: GraphWindowActions):
-        self.addAction(actions.new_model)
+        self.addAction(actions.update)

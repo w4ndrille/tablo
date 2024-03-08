@@ -88,7 +88,7 @@ except ImportError:
     from lib.hashing import genkey
     from model.model import CellAttributes
     import grid
-
+    from cli import PyspreadArgumentParser
 LICENSE = "GNU GENERAL PUBLIC LICENSE Version 3"
 
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
@@ -99,19 +99,17 @@ class GraphWindow(QMainWindow):
 
     gui_update = pyqtSignal(dict)
 
-    def __init__(self,grid : grid.Grid, filepath: Path = Path(),
+    def __init__(self,parent : QMainWindow, filepath: Path = Path(),
                  default_settings: bool = False):
         """
         :param filepath: File path for inital file to be opened
         :param default_settings: Ignore stored `QSettings` and use defaults
 
         """
-
-
         super().__init__()
-
+        self.parent = parent
         #Only the first grid
-        self.grid = grid
+        self.grid = parent.grid
 
         self._loading = True  # For initial loading of pyspread
         self.prevent_updates = False  # Prevents setData updates in grid
@@ -153,7 +151,6 @@ class GraphWindow(QMainWindow):
         if self._loading:
             return
         super().resizeEvent(event)
-
 
 
     def _init_widgets(self):
@@ -223,16 +220,6 @@ class GraphWindow(QMainWindow):
 
         macrodock_visible = self.macro_dock.isVisibleTo(self)
         actions.toggle_macro_dock.setChecked(macrodock_visible)
-
-    @property
-    def focused_grid(self):
-        """Returns grid with focus or self if none has focus"""
-
-        try:
-            return self._last_focused_grid
-        except AttributeError:
-            return self.grid
-
     @property
     def safe_mode(self) -> bool:
         """Returns safe_mode state. In safe_mode cells are not evaluated."""
@@ -269,111 +256,6 @@ class GraphWindow(QMainWindow):
             self.grid.model.code_array.result_cache.clear()
             # Execute macros
             self.macro_panel.on_apply()
-
-    def on_print(self):
-        """Print event handler"""
-
-        # Create printer
-        printer = QPrinter(mode=QPrinter.PrinterMode.HighResolution)
-
-        # Get print area
-        self.print_area = PrintAreaDialog(self, self.grid,
-                                          title="Print area").area
-        if self.print_area is None:
-            return
-
-        # Create print dialog
-        dialog = QPrintDialog(printer, self)
-        if dialog.exec() == QPrintDialog.Accepted:
-            self.on_paint_request(printer)
-
-        self.print_area = None
-
-    def on_preview(self):
-        """Print preview event handler"""
-
-        # Create printer
-        printer = QPrinter(mode=QPrinter.PrinterMode.HighResolution)
-
-        # Get print area
-        self.print_area = PrintAreaDialog(self, self.grid,
-                                          title="Print area").area
-        if self.print_area is None:
-            return
-
-        # Create print preview dialog
-        dialog = PrintPreviewDialog(printer)
-
-        dialog.paintRequested.connect(self.on_paint_request)
-        dialog.exec()
-
-        self.print_area = None
-
-    def on_paint_request(self, printer: QPrinter):
-        """Paints to printer
-
-        :param printer: Target printer
-
-        """
-
-        painter = QPainter(printer)
-        option = QStyleOptionViewItem()
-        painter.setRenderHints(QPainter.RenderHint.SmoothPixmapTransform
-                               | QPainter.RenderHint.SmoothPixmapTransform)
-
-        page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
-
-        rows = list(self.workflows.get_paint_rows(self.print_area.top,
-                                                  self.print_area.bottom))
-        columns = list(self.workflows.get_paint_columns(self.print_area.left,
-                                                        self.print_area.right))
-        tables = list(self.workflows.get_paint_tables(self.print_area.first,
-                                                      self.print_area.last))
-        if not all((rows, columns, tables)):
-            return
-
-        old_table = self.grid.table
-
-        for i, table in enumerate(tables):
-            self.grid.table = table
-
-            zeroidx = self.grid.model.index(0, 0)
-            zeroidx_rect = self.grid.visualRect(zeroidx)
-
-            minidx = self.grid.model.index(min(rows), min(columns))
-            minidx_rect = self.grid.visualRect(minidx)
-
-            maxidx = self.grid.model.index(max(rows), max(columns))
-            maxidx_rect = self.grid.visualRect(maxidx)
-
-            grid_width = maxidx_rect.x() + maxidx_rect.width() \
-                - minidx_rect.x()
-            grid_height = maxidx_rect.y() + maxidx_rect.height() \
-                - minidx_rect.y()
-            grid_rect = QRectF(minidx_rect.x() - zeroidx_rect.x(),
-                               minidx_rect.y() - zeroidx_rect.y(),
-                               grid_width, grid_height)
-
-            self.settings.print_zoom = min(page_rect.width() / grid_width,
-                                           page_rect.height() / grid_height)
-
-            with painter_save(painter):
-                painter.scale(self.settings.print_zoom,
-                              self.settings.print_zoom)
-
-                # Translate so that the grid starts at upper left paper edge
-                painter.translate(zeroidx_rect.x() - minidx_rect.x(),
-                                  zeroidx_rect.y() - minidx_rect.y())
-
-                # Draw grid cells
-                self.workflows.paint(painter, option, grid_rect, rows, columns)
-
-            self.settings.print_zoom = None
-
-            if i != len(tables) - 1:
-                printer.newPage()
-
-        self.grid.table = old_table
 
     def on_fullscreen(self):
         """Fullscreen toggle event handler"""
@@ -676,3 +558,8 @@ class GraphWindow(QMainWindow):
             attributes.merge_area is not None)
         self.main_window_toolbar_actions.merge_cells.setChecked(
             attributes.merge_area is not None)
+
+    def update(self):
+        self.close()
+        self.parent.workflows.new_window()
+        self = None

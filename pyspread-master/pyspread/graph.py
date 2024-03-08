@@ -55,14 +55,13 @@ class Graph(QWebEngineView):
     def __init__(self, parent:QMainWindow, model=None):
         super().__init__()
         self.parent = parent
-        self.series = [] #an array for all the plot | it's an array of Series especially XYSeries mother class
         self.axisLabels = []
-
+        #array of values or maybe array for multiploting
+        self.xValues= []
+        self.yValues = []
         #shorting the accesser to data
         self.model = self.parent.grid.model
 
-        self.axisX = QValueAxis()
-        self.axisY = QValueAxis()
 
         self.get_series()
         self._init_chart()
@@ -72,24 +71,17 @@ class Graph(QWebEngineView):
 
 
     def _init_chart(self):
-        """
-        Define the main chart and all the legends and axis
-        """
-        # The main chart which support the series
+        #the first html balise for the widget
         self.chart = '<html><body>'
 
 
-    def get_series(self, selectSeriesType : bool = False, colIndexX :int = 0,colIndexY :int = 1):
+    def get_series(self, colIndexX :int = 0,colIndexY :int = 1):
         """
         Getting the curve from X col and Y col
         """
         max = 150 # it matches the maximum row index
         inc = 1 #start at 1 to avoid getting the physical meaning of the column
 
-        if selectSeriesType:
-            series = QScatterSeries()
-        else:
-            series = QLineSeries()
 
         while inc < max :
             x = self.model.index(inc,colIndexX).data()
@@ -98,38 +90,35 @@ class Graph(QWebEngineView):
             if x == "" or y == "":
                 break
 
-            series.append(int(x), int(y))
+            self.xValues.append(int(x))
+            self.yValues.append(int(y))
 
             inc += 1
 
         self.axisLabels.append(self.model.index(0,colIndexX).data())
         self.axisLabels.append(self.model.index(0,colIndexY).data())
 
-        self.series.append(series)
+
 
 
     def update_chart(self):
         """
         Update the chart with all the series
         """
-        n = len(self.series)
+
 
         ##zone de test pour QWebEngine
         x = np.arange(1000)
         y= x**2
 
-        fig = go.Figure(go.Scatter(x=x, y=y,name="Name Scatter"))
+        fig = go.Figure(go.Scatter(x=self.xValues, y=self.yValues,name="Name Scatter"))
+
         #Pour ajouter les légends
         fig.update_layout(
             title="Scatter",
-            xaxis_title="les x",
-            yaxis_title="les y",
+            xaxis_title=self.axisLabels[0],
+            yaxis_title=self.axisLabels[1],
             legend_title="Legend title",
-            font=dict(
-                family="Courrier New",
-                size =18,
-                color="Red"
-            ),
         )
 
         #permet d'avoir l'écriture scientifique / a enlever si on veut l'écriture simple en mettant ="none"
@@ -139,25 +128,3 @@ class Graph(QWebEngineView):
         self.chart += '</body></html>'
         self.setHtml(self.chart)
 
-
-
-
-
-
-
-class GridTableModel(QAbstractTableModel):
-    """QAbstractTableModel for Grid"""
-
-    cell_to_update = pyqtSignal(tuple)
-
-    def __init__(self, main_window: QMainWindow,
-                 shape: Tuple[int, int, int]):
-        """
-        :param main_window: Application main window
-        :param shape: Grid shape `(rows, columns, tables)`
-
-        """
-
-        super().__init__()
-
-        self.main_window = main_window
