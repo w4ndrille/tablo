@@ -25,7 +25,10 @@ from PyQt6.QtCore \
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from lib.attrdict import AttrDict
 #import graphiques
+
 import numpy as np
+#import every math functions usable with np array
+from numpy import *
 import plotly
 import plotly.graph_objects as go
 
@@ -115,7 +118,6 @@ class Graph(QWebEngineView):
 
         #Pour ajouter les légends
         self.fig.update_layout(
-            title="Scatter",
             xaxis_title=self.axisLabels[0],
             yaxis_title=self.axisLabels[1],
             legend_title="Legend title",
@@ -137,3 +139,16 @@ class Graph(QWebEngineView):
         self.chart += plotly.offline.plot(self.fig,output_type='div',include_plotlyjs='cdn')
         self.chart += '</body></html>'
         self.setHtml(self.chart)
+
+    def add_modele(self,equation:str ,from_:int,to_:int):
+        self.chart = "<html><body>"
+
+        #create a np array from -100 to 100 and create the y array associated
+        x = np.arange(from_,to_,0.1)
+        y = eval(equation)
+
+        self.fig.add_traces(go.Scatter(x=x, y=y,name=equation))
+        self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
+        self.chart += '</body></html>'
+        self.setHtml(self.chart)
+

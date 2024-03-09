@@ -30,7 +30,7 @@ from contextlib import contextmanager
 
 from PyQt6.QtCore import Qt, QEvent
 from PyQt6.QtGui import QTextOption, QKeyEvent
-from PyQt6.QtWidgets import QWidget, QMainWindow
+from PyQt6.QtWidgets import QWidget, QMainWindow,QSpinBox, QDialog
 
 try:
     import pyspread.commands as commands
@@ -187,3 +187,4 @@ class Entryline(SpellTextEdit):
                 super().setPlainText(text)
         else:
             super().setPlainText(text)
+

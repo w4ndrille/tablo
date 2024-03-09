@@ -47,6 +47,8 @@ class IconPath:
     safe_mode = STATUS_PATH / 'status-safe-mode.svg'
     selection_mode = STATUS_PATH / 'status-selection-mode.svg'
 
+    #Graph Menus Icons
+
     # File menu icons
     new = ACTION_PATH / 'document-new.svg'
     open = ACTION_PATH / 'document-open.svg'

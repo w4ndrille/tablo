@@ -13,5 +13,6 @@ class GraphWorkflows:
 
         self.graph_window.update()
 
-
+    def new_modele(self):
+       self.graph_window.modeleDialog()
 ###FONCTION EXEMPLE

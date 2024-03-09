@@ -40,7 +40,7 @@ from pathlib import Path
 from PyQt6.QtCore import Qt, pyqtSignal, QEvent, QTimer, QRectF
 from PyQt6.QtWidgets import (QWidget, QMainWindow, QApplication,
                              QMessageBox, QDockWidget, QVBoxLayout,
-                             QStyleOptionViewItem, QSplitter, QDialog, QGraphicsItem )
+                             QStyleOptionViewItem, QSplitter, QDialog, QGraphicsItem, QLineEdit )
 try:
     from PyQt6.QtSvgWidgets import QSvgWidget
 except ImportError:
@@ -81,7 +81,7 @@ except ImportError:
     from graph_workflows import GraphWorkflows
     from widgets import Widgets
     from dialogs import (ApproveWarningDialog, PreferencesDialog, ManualDialog,
-                         TutorialDialog, PrintAreaDialog, PrintPreviewDialog)
+                         TutorialDialog, PrintAreaDialog, PrintPreviewDialog,InsertModel,CreateModel)
     from installer import DependenciesDialog
     from interfaces.pys import qt62qt5_fontweights
     from panels import MacroPanel
@@ -130,7 +130,7 @@ class GraphWindow(QMainWindow):
 
     def _init_window(self):
         """Initialize main window components"""
-        self.resize(400,330) # initial format
+        self.resize(1200,600) # initial format
         self.setWindowTitle("Graph")
         self.setWindowIcon(Icon.pyspread)
 
@@ -170,8 +170,24 @@ class GraphWindow(QMainWindow):
 
     def _layout(self):
         """Set all the layout in the Graph Window"""
+        self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
+        modele_insertion = InsertModel(self)
 
-        self.setCentralWidget(self.graph)
+
+        self.splitter.addWidget(modele_insertion)
+        self.splitter.addWidget(self.graph)
+
+
+        self.splitter.setSizes((200,800))
+        self.setCentralWidget(self.splitter)
+
+
+    def modeleDialog(self):
+        create_modele_dialog = CreateModel(self)
+
+
+
+
 
 
     def eventFilter(self, source: QWidget, event: QEvent) -> bool:
@@ -191,9 +207,6 @@ class GraphWindow(QMainWindow):
         """Initialize the main window toolbars"""
 
         self.main_toolbar = GraphMainToolBar(self)
-        """self.macro_toolbar = MacroToolbar(self)
-        self.find_toolbar = FindToolbar(self)
-        self.format_toolbar = FormatToolbar(self)"""
 
         self.addToolBar(self.main_toolbar)
 

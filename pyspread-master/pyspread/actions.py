@@ -1043,8 +1043,15 @@ class GraphWindowActions(AttrDict):
 
         self.create_modelisation_actions()
         self.create_help_actions()
+        self.modeles_menu_actions()
 
         #Add here every actions bars (function) you want to add to the projet
+    def modeles_menu_actions(self):
+        self.new_modele = Action(self.parent, "&Nouveau Modèle",
+                                 self.parent.workflows.new_modele,
+                                 icon=Icon.insert_chart,
+                                 checkable=True,
+                                 statustip='Insert a new model ')
 
     def create_modelisation_actions(self):
         self.update = Action(self.parent, "&Update Modelisation",

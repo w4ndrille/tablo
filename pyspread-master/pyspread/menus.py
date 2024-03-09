@@ -102,20 +102,33 @@ class GraphMenuBar(QMenuBar):
 
         self.graph_window = graph_window
         actions = graph_window.graph_window_actions
+
         self.help_menu = HelpMenuG(self, actions)
         #self.NomDuMenu = NomClass(self, actions)
-
+        self.modeles_menu = ModeleMenu(self,actions)
 
         #self.addMenu(self.NOMDUMENU)
+        self.addMenu(self.modeles_menu)
         self.addMenu(self.help_menu)
 
 #WARNING This is the graph menu inside the Main Window
 class GraphMenu(QMenu):
-    def __init__(self, parent: QWidget, actions : MainWindowActions):
+    def __init__(self, parent: QWidget, actions : GraphWindowActions):
 
         super().__init__('&Graph', parent)
         self.parent = parent
         self.addAction(actions.newWindows)
+
+
+
+class ModeleMenu(QMenu):
+
+    def __init__(self,parent: QWidget, actions : GraphWindowActions):
+        super().__init__('&Modèles',parent)
+        self.parent = parent
+        self.addAction(actions.new_modele)
+
+
 
 class FileMenu(QMenu):
     """File menu for the main menubar"""
