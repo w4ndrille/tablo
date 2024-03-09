@@ -1,3 +1,5 @@
+import numpy
+from matplotlib.pyplot import Figure
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 

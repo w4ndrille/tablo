@@ -1,3 +1,5 @@
+import numpy
+from matplotlib.pyplot import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 fig = Figure()

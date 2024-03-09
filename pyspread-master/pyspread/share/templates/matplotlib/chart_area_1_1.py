@@ -1,3 +1,6 @@
+import numpy
+from matplotlib.pyplot import Figure
+
 fig = Figure()
 ax = fig.add_axes([.2,.2, .7, .7])
 

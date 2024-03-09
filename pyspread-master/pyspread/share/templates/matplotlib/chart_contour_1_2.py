@@ -1,5 +1,6 @@
 from matplotlib import cm
-
+import numpy
+from matplotlib.pyplot import Figure
 fig = Figure()
 ax = fig.add_axes([.15,.15, .75, .75])
 
