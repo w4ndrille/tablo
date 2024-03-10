@@ -99,7 +99,7 @@ class GraphWindow(QMainWindow):
 
     gui_update = pyqtSignal(dict)
 
-    def __init__(self,parent : QMainWindow, filepath: Path = Path(),
+    def __init__(self,parent : QMainWindow, figs:list = None,
                  default_settings: bool = False):
         """
         :param filepath: File path for inital file to be opened
@@ -110,6 +110,8 @@ class GraphWindow(QMainWindow):
         self.parent = parent
         #Only the first grid
         self.grid = parent.grid
+        #storing all the figures displayed
+        self.figs = figs
 
         self._loading = True  # For initial loading of pyspread
         self.prevent_updates = False  # Prevents setData updates in grid
@@ -157,8 +159,9 @@ class GraphWindow(QMainWindow):
         """Initialize widgets"""
 
         self.widgets = Widgets(self)
+
         # We have one main view that is used as default view
-        self.graph = Graph(self)
+        self.graph = Graph(self,self.figs)
         self.main_panel = QWidget(self)
 
         self.central_layout = QVBoxLayout(self.main_panel)
@@ -183,7 +186,7 @@ class GraphWindow(QMainWindow):
 
 
     def modeleDialog(self):
-        create_modele_dialog = CreateModel(self)
+        self.modele_dialog = CreateModel(self)
 
 
 
@@ -573,6 +576,7 @@ class GraphWindow(QMainWindow):
             attributes.merge_area is not None)
 
     def update(self):
+
         self.close()
-        self.parent.workflows.new_window()
+        self.parent.workflows.new_window(self.graph.figs,True)
         self = None

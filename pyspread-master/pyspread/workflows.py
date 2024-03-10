@@ -107,13 +107,16 @@ class Workflows:
         self.main_window = main_window
 
 # Ajout de notre part
-    def new_window(self):
+    def new_window(self, figs:list = None,bool = False):
         parser = PyspreadArgumentParser()
         args, _ = parser.parse_known_args()
 
 
         #On passe la grille en argument pour avoir accès aux cases
-        graph_window = GraphWindow(self.main_window,args.file, default_settings=args.default_settings)
+        if not bool:
+            graph_window = GraphWindow(self.main_window,args.file, default_settings=args.default_settings)
+        else :
+            graph_window = GraphWindow(self.main_window,figs,args.file)
 
         graph_window.show()
 

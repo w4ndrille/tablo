@@ -55,17 +55,25 @@ FONCTIONNEMENT :
 
 """
 class Graph(QWebEngineView):
-    def __init__(self, parent:QMainWindow, model=None):
+    def __init__(self, parent:QMainWindow, figs = None):
         super().__init__()
         self.parent = parent
         self.axisLabels = []
+        # shorting the accesser to data
+        self.model = self.parent.grid.model
+        # the figure supporting our model
+        self.fig = go.Figure()
+        #getting all the figures on a reload
+        if figs is None:
+            self.figs = []
+        else:
+            self.figs = figs
+            self.rebuild()
+
         #array of values or maybe array for multiploting
         self.xValues= []
         self.yValues = []
-        #shorting the accesser to data
-        self.model = self.parent.grid.model
-        #the figure supporting our model
-        self.fig = go.Figure()
+
 
 
         self.get_series()
@@ -104,15 +112,23 @@ class Graph(QWebEngineView):
         self.axisLabels.append(self.model.index(0,colIndexY).data())
 
 
+    def rebuild(self):
+        self.chart = "<html><body>"
+        #create a np array from -100 to 100 and create the y array associated
+
+        for i in range(len(self.figs)):
+
+            self.fig.add_traces(self.figs[i])
+
+        self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
+        self.chart += '</body></html>'
+        self.setHtml(self.chart)
 
 
     def update_chart(self):
         """
         Update the chart with all the series
         """
-
-
-
 
         self.fig.add_traces(go.Scatter(x=self.xValues, y=self.yValues,name="Name Scatter"))
 
@@ -130,15 +146,6 @@ class Graph(QWebEngineView):
         self.chart += '</body></html>'
         self.setHtml(self.chart)
 
-    def update(self):
-        self.chart ="<html><body>"
-
-        x = np.arange(1000)
-        y = x**2
-        self.fig.add_traces(go.Scatter(x=x,y=y))
-        self.chart += plotly.offline.plot(self.fig,output_type='div',include_plotlyjs='cdn')
-        self.chart += '</body></html>'
-        self.setHtml(self.chart)
 
     def add_modele(self,equation:str ,from_:int,to_:int):
         self.chart = "<html><body>"
@@ -147,7 +154,11 @@ class Graph(QWebEngineView):
         x = np.arange(from_,to_,0.1)
         y = eval(equation)
 
+
         self.fig.add_traces(go.Scatter(x=x, y=y,name=equation))
+
+        #adding the trace in to the figs
+        self.figs.append(go.Scatter(x=x, y=y,name=equation))
         self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
         self.chart += '</body></html>'
         self.setHtml(self.chart)

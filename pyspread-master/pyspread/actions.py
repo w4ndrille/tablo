@@ -1084,4 +1084,3 @@ class GraphWindowActions(AttrDict):
                             statustip='About pyspread',
                             role=QAction.MenuRole.AboutRole)
 
-

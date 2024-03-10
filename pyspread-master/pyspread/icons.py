@@ -33,9 +33,9 @@ from PyQt6.QtGui import QIcon
 
 try:
     from pyspread.settings import (ICON_PATH, ACTION_PATH, STATUS_PATH,
-                                   CHARTS_PATH)
+                                   CHARTS_PATH,MODELE_PATH)
 except ImportError:
-    from settings import ICON_PATH, ACTION_PATH, STATUS_PATH, CHARTS_PATH
+    from settings import ICON_PATH, ACTION_PATH, STATUS_PATH, CHARTS_PATH, MODELE_PATH
 
 
 class IconPath:
@@ -201,6 +201,18 @@ class IconPath:
     chart_r_lattice_wireframe_2_1 =\
         CHARTS_PATH / 'chart_r_lattice_wireframe_2_1.svg'
 
+
+    # Modele icons
+    affine = MODELE_PATH /'affine.svg'
+    linear = MODELE_PATH /'linear.svg'
+    parabola = MODELE_PATH /'parabola.svg'
+    exponential = MODELE_PATH /'exponential.svg'
+    logarithm = MODELE_PATH /'logarithm.svg'
+    sigmoid = MODELE_PATH /'sigmoid.svg'
+    power = MODELE_PATH /'power.svg'
+    michaelis = MODELE_PATH /'michaelis.svg'
+    gaussian = MODELE_PATH /'gaussian.svg'
+    lorentz = MODELE_PATH /'lorentz.svg'
 
 class IconConverter(type):
     """Meta class that provides QIcons for IconPaths icons"""

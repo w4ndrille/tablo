@@ -52,6 +52,7 @@ ICON_PATH = PYSPREAD_PATH / 'pyspread/share/icons'
 ACTION_PATH = ICON_PATH / 'actions'
 STATUS_PATH = ICON_PATH / 'status'
 CHARTS_PATH = ICON_PATH / 'charts'
+MODELE_PATH = ICON_PATH / 'modele'
 WEB_URL = "https://pyspread.gitlab.io"  # Official Web page
 
 

@@ -1,0 +1,3 @@
+les images doivent impérativement être des .svg
+et 750 par 750
+

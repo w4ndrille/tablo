@@ -60,20 +60,21 @@ import io
 from pathlib import Path
 from typing import List, Sequence, Tuple, Union
 
-from PyQt6.QtCore import Qt, QPoint, QSize, QEvent
+from PyQt6.QtCore import Qt, QPoint, QSize, QEvent, QRect
 from PyQt6.QtWidgets \
     import (QApplication, QMessageBox, QFileDialog, QDialog, QLineEdit, QLabel,
             QFormLayout, QVBoxLayout, QGroupBox, QDialogButtonBox, QSplitter,
             QTextBrowser, QCheckBox, QGridLayout, QLayout, QHBoxLayout,
             QPushButton, QWidget, QComboBox, QTableView, QAbstractItemView,
-            QPlainTextEdit, QToolBar, QMainWindow, QTabWidget, QInputDialog)
+            QPlainTextEdit, QToolBar, QMainWindow, QTabWidget, QInputDialog, QToolButton,QButtonGroup,
+            QStackedWidget, QStackedLayout)
 from PyQt6.QtGui \
     import (QIntValidator, QImageWriter, QStandardItemModel, QStandardItem,
-            QValidator, QWheelEvent)
+            QValidator, QWheelEvent,QTextDocument)
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtPrintSupport import (QPrintPreviewDialog, QPrintPreviewWidget,
                                   QPrinter)
-
+from icons import Icon
 try:
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -1086,39 +1087,152 @@ class CreateModel(QDialog):
         self.parent = parent
         self.resize(*size)
         self.setWindowTitle("Create a new Model")
-
+        self.rows = []
         self.dialog_ui()
 
     def dialog_ui(self):
         #Layout
-        layout = QVBoxLayout()
+        self.layout = QVBoxLayout()
 
-        self.editor = QPlainTextEdit(self)
-        self.splitter = QSplitter(self)
+        row1box = QHBoxLayout()
+        row2box = QHBoxLayout()
+        row3box = QHBoxLayout()
+        buttonlayout = QHBoxLayout()
 
         button_box = self.create_buttonbox()
-        #add to the splitter all the fetaures widgets
+        self.gridButton = self.create_curves_button_container()
+        #add to the splitter all the features widgets
 
-        self.splitter.addWidget(self.editor)
-        self.splitter.setOpaqueResize(False)
-        self.splitter.setSizes([9999, 9999])
 
-        layout.addWidget(self.splitter)
-        layout.addWidget(button_box)
-        self.setLayout(layout)
+        for i in range(4):
+            row1box.addWidget(self.gridButton.button(i))
+            row2box.addWidget(self.gridButton.button(i+4))
+
+        row3box.addWidget(self.gridButton.button(8))
+        row3box.addWidget(self.gridButton.button(9))
+
+
+        buttonlayout.addWidget(button_box)
+        buttonlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+
+        self.layout.addLayout(row1box)
+        self.layout.addLayout(row2box)
+        self.layout.addLayout(row3box)
+        self.layout.addLayout(buttonlayout)
+
+        self.rows.append(row1box)
+        self.rows.append(row2box)
+        self.rows.append(row3box)
+
+        self.setLayout(self.layout)
         self.show()
+
+    def create_curves_button_container(self):
+        #defining the container
+        toolbar = QButtonGroup()
+        #toolbar.setGeometry(QRect(0,0,700,800))
+        #toolbar.setRowMinimumHeight(0,200)
+
+        linButton = self.create_curves_buttons("Linéaire",Icon.linear)
+        affButton = self.create_curves_buttons("Affine",Icon.affine)
+        polyButton = self.create_curves_buttons("Polynomiale",Icon.power)
+        logButton = self.create_curves_buttons("Logarithme",Icon.logarithm)
+        expButton = self.create_curves_buttons("Exponentiale",Icon.exponential)
+        parabolButton = self.create_curves_buttons("Parabole",Icon.parabola)
+        sigButton = self.create_curves_buttons("Sigmoïde",Icon.sigmoid)
+        michaButton = self.create_curves_buttons("Michaelis",Icon.michaelis)
+        gaussButton = self.create_curves_buttons("Gauss",Icon.gaussian)
+        lorentzButton = self.create_curves_buttons("Lorentz",Icon.lorentz)
+
+        #Adding the buttons to the ButtonGroup
+        toolbar.addButton(linButton,0)
+        toolbar.addButton(affButton,1)
+        toolbar.addButton(polyButton,2)
+        toolbar.addButton(expButton,3)
+
+        toolbar.addButton(logButton,4)
+        toolbar.addButton(parabolButton,5)
+        toolbar.addButton(sigButton,6)
+        toolbar.addButton(michaButton,7)
+
+        toolbar.addButton(gaussButton,8)
+        toolbar.addButton(lorentzButton,9)
+
+
+
+        return toolbar
+
+    def create_curves_buttons(self,name:str, icon:Icon=None ):
+        button = QPushButton()
+        button.setAutoFillBackground(True)
+        button.setIconSize(QSize(300, 200))
+        button.setMinimumHeight(200)
+        button.setMinimumWidth(200)
+        if icon is not None:
+            button.setIcon(icon)
+        else:
+            button.setIcon(Icon.new)
+        # Displaying the name of the button under the Icon
+        buttonLayout = QVBoxLayout()
+        buttonLayout.addWidget(QLabel(name))
+        buttonLayout.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+        button.setLayout(buttonLayout)
+        #adding the button to a widget to be able to delete it later
+        layout = QVBoxLayout()
+        layout.addWidget(button)
+
+        button.clicked.connect(lambda : self.change(name))
+
+        return button
+
+    def change(self,name:str=""):
+
+        #On enlève tout les boutons
+        for i in range(10):
+            self.layout.removeWidget(self.gridButton.button(i))
+
+        #on ajoute la bonne fenêtre en fonction de la fonction choisie
+        container = self.rows[0]
+        main_layout = QVBoxLayout()
+
+        #Name of the modele to display
+        headerName = QHBoxLayout()
+        labelName = QLabel(" <h2>Modèle " + name +"</h2>" ,self)
+        labelName.setTextFormat(Qt.TextFormat.RichText)
+        labelName.setMargin(50)
+        headerName.addWidget(labelName)
+        headerName.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+
+
+
+        main_layout.addLayout(headerName)
+        """
+            Il faut ajouter tout les paramètres possibles pour chaque modèle avec un switch et ensuite dans apply il faut tout récupérer
+            et envoyer vers une nouvelle fonction pour l'afficher 
+            Pensez à inclure les choix de customisations pour plotly avec le type de ligne (doted/ épais) et les points aussi)
+        """
+
+        container.addLayout(main_layout)
+
+
+
     def apply(self):
         """ send the parameters to the graph and reload"""
         print("it applies")
 
+
     def create_buttonbox(self):
         """Returns a QDialogButtonBox with Ok and Cancel"""
 
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply |QDialogButtonBox.StandardButton.Reset | QDialogButtonBox.StandardButton.Cancel)
         button_box.rejected.connect(self.reject)
-        button_box.button(
-            QDialogButtonBox.StandardButton.Apply).clicked.connect(self.apply)
+        button_box.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(self.apply)
+        button_box.button(QDialogButtonBox.StandardButton.Reset).clicked.connect(self.reset)
         return button_box
+
+    def reset(self):
+        self.hide()
+        self.__init__(self.parent)
 
 class InsertModel(QWidget):
     def __init__(self, parent: QWidget,
