@@ -61,6 +61,7 @@ from pathlib import Path
 from typing import List, Sequence, Tuple, Union
 
 from PyQt6.QtCore import Qt, QPoint, QSize, QEvent, QRect
+
 from PyQt6.QtWidgets \
     import (QApplication, QMessageBox, QFileDialog, QDialog, QLineEdit, QLabel,
             QFormLayout, QVBoxLayout, QGroupBox, QDialogButtonBox, QSplitter,
@@ -1099,7 +1100,7 @@ class CreateModel(QDialog):
         row3box = QHBoxLayout()
         buttonlayout = QHBoxLayout()
 
-        button_box = self.create_buttonbox()
+        self.button_box = self.create_buttonbox()
         self.gridButton = self.create_curves_button_container()
         #add to the splitter all the features widgets
 
@@ -1111,8 +1112,7 @@ class CreateModel(QDialog):
         row3box.addWidget(self.gridButton.button(8))
         row3box.addWidget(self.gridButton.button(9))
 
-
-        buttonlayout.addWidget(button_box)
+        buttonlayout.addLayout(self.button_box)
         buttonlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
 
         self.layout.addLayout(row1box)
@@ -1166,12 +1166,9 @@ class CreateModel(QDialog):
         button = QPushButton()
         button.setAutoFillBackground(True)
         button.setIconSize(QSize(300, 200))
+        button.setIcon(icon)
         button.setMinimumHeight(200)
         button.setMinimumWidth(200)
-        if icon is not None:
-            button.setIcon(icon)
-        else:
-            button.setIcon(Icon.new)
         # Displaying the name of the button under the Icon
         buttonLayout = QVBoxLayout()
         buttonLayout.addWidget(QLabel(name))
@@ -1206,6 +1203,12 @@ class CreateModel(QDialog):
 
 
         main_layout.addLayout(headerName)
+
+        #add a button to directly evaluate the data with a modele instead of create a new curve with given argument
+        evaluateButton = QPushButton("Evaluate")
+        evaluateButton.clicked.connect(lambda:  self.parent.graph.evaluate(name))
+        self.button_box.addWidget(evaluateButton)
+        #il manque la connection
         """
             Il faut ajouter tout les paramètres possibles pour chaque modèle avec un switch et ensuite dans apply il faut tout récupérer
             et envoyer vers une nouvelle fonction pour l'afficher 
@@ -1214,8 +1217,6 @@ class CreateModel(QDialog):
 
         container.addLayout(main_layout)
 
-
-
     def apply(self):
         """ send the parameters to the graph and reload"""
         print("it applies")
@@ -1223,11 +1224,20 @@ class CreateModel(QDialog):
 
     def create_buttonbox(self):
         """Returns a QDialogButtonBox with Ok and Cancel"""
+        button_box = QHBoxLayout()
 
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply |QDialogButtonBox.StandardButton.Reset | QDialogButtonBox.StandardButton.Cancel)
-        button_box.rejected.connect(self.reject)
-        button_box.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(self.apply)
-        button_box.button(QDialogButtonBox.StandardButton.Reset).clicked.connect(self.reset)
+        acceptButton = QPushButton("Apply")
+        cancelButton = QPushButton("Cancel")
+        resetButton = QPushButton("Reset")
+
+        #Connect
+        acceptButton.clicked.connect(self.apply)
+        cancelButton.clicked.connect(self.reject)
+        resetButton.clicked.connect(self.reset)
+
+        button_box.addWidget(resetButton)
+        button_box.addWidget(acceptButton)
+        button_box.addWidget(cancelButton)
         return button_box
 
     def reset(self):

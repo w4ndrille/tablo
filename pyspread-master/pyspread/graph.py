@@ -31,6 +31,7 @@ import numpy as np
 from numpy import *
 import plotly
 import plotly.graph_objects as go
+from scipy.optimize import curve_fit
 
 try:
     import matplotlib
@@ -63,6 +64,7 @@ class Graph(QWebEngineView):
         self.model = self.parent.grid.model
         # the figure supporting our model
         self.fig = go.Figure()
+
         #getting all the figures on a reload
         if figs is None:
             self.figs = []
@@ -70,6 +72,8 @@ class Graph(QWebEngineView):
             self.figs = figs
             self.rebuild()
 
+        #creating another array to stock the modelisation
+        self.modelisationCurves = []
         #array of values or maybe array for multiploting
         self.xValues= []
         self.yValues = []
@@ -130,7 +134,7 @@ class Graph(QWebEngineView):
         Update the chart with all the series
         """
 
-        self.fig.add_traces(go.Scatter(x=self.xValues, y=self.yValues,name="Name Scatter"))
+        self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
 
         #Pour ajouter les légends
         self.fig.update_layout(
@@ -155,11 +159,70 @@ class Graph(QWebEngineView):
         y = eval(equation)
 
 
-        self.fig.add_traces(go.Scatter(x=x, y=y,name=equation))
+        self.fig.add_traces(go.Scatter(x=x,y=y,name=equation))
 
         #adding the trace in to the figs
-        self.figs.append(go.Scatter(x=x, y=y,name=equation))
+        self.figs.append(go.Scatter(x=x,y=y,name=equation))
+
         self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
         self.chart += '</body></html>'
         self.setHtml(self.chart)
 
+    def evaluate(self, name:str):
+        #a dict which contains all the possible functions to avoid the switch / infitite else if case
+        functionDict = {
+            'polynomiale' : self.polynomiale,
+            'linéaire': self.linear,
+            'affine' : self.affine,
+            'logarithme' : self.logarithm,
+            'exponentiale' : self.exponential,
+            'parabole' : self.parabole,
+            'sigmoïde' : self.sigmoide,
+            'michaelis': self.michaelis,
+            'gauss' : self.gauss,
+            'lorentz' : self.lorentz
+        }
+        print(name.lower())
+        #getting the optimal parameters and the covariance matrix
+        popt, pcov = curve_fit(functionDict[name.lower()],self.xValues,self.yValues)
+        maxX,minX = max(self.xValues),min(self.xValues)
+        maxY,minY = max(self.yValues),min(self.yValues)
+
+        x = np.arange(minX-10,maxX+10,0.1)
+        y = functionDict[name.lower()](x,*popt)
+
+        self.modelisationCurves.append(go.Scatter(x=x,y=y,name="Estimation de la courbe des données"))
+        self.fig.add_traces(go.Scatter(x=x,y=y,name="Estimation de la courbe"))
+        #adding the modele
+
+        self.chart = "<html><body>"
+        self.chart += plotly.offline.plot(self.fig,output_type='div', include_plotlyjs='cdn')
+        self.chart += "</body></html>"
+        self.setHtml(self.chart)
+    # All functions to be evaluate
+    def polynomiale(self,x,a:float, b:float, c:float,d:float,e:float,f:float,g:float,h:float):
+        return a*x**7+b*x**6 + c*x**5 + d*x**4 + e*x**3 + f*x**2 + g*x + h
+    def linear(self,x, a:float):
+        return a*x
+
+    def affine(self,x, a:float, b:float):
+        return a*x + b
+    def logarithm(self,x,a:float, b:float):
+        return a*log(x+b)
+
+    def exponential(self,x,a:float,b:float):
+        return exp(a*x+b)
+
+    def parabole(self,x,a:float,b:float,c:float):
+        return a*x**2 + b*x + c
+
+    def sigmoide(self, x, a : float):
+        return 1/(1+np.exp(-a *x))
+
+    def michaelis(self,x,K_M:float,v_max:float):
+        #where x = S0
+        return (v_max*x )/(K_M + x)
+    def gauss(self,x,mu:float,sigma:float):
+        return exp(-(x-mu)**2/(2*sigma**2))/(sigma*sqrt(2*pi))
+    def lorentz(self,x,gamma:float,x_0 : float):
+        return (gamma/1*pi)/((gamma**2/4)+(x-x_0)**2)
