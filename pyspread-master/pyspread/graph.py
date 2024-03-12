@@ -157,6 +157,7 @@ class Graph(QWebEngineView):
             xaxis_title=self.axisLabels[0],
             yaxis_title=self.axisLabels[1],
             legend_title="Legend title",
+
         )
 
         #permet d'avoir l'écriture scientifique / a enlever si on veut l'écriture simple en mettant ="none"
@@ -176,7 +177,6 @@ class Graph(QWebEngineView):
 
 
         self.fig.add_traces(go.Scatter(x=x,y=y,name=equation))
-
         #adding the trace in to the figs
         self.figs.append(go.Scatter(x=x,y=y,name=equation))
 
@@ -235,7 +235,8 @@ class Graph(QWebEngineView):
                     sum += var
                  sum_variances[fct] = sum
 
-
+        #debugging, uncomment to see
+        print(sum_variances)
 
         #then plotting the right modele
         self.evaluate( min(sum_variances, key=sum_variances.get))

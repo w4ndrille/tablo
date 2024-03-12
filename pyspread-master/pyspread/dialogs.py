@@ -68,13 +68,14 @@ from PyQt6.QtWidgets \
             QTextBrowser, QCheckBox, QGridLayout, QLayout, QHBoxLayout,
             QPushButton, QWidget, QComboBox, QTableView, QAbstractItemView,
             QPlainTextEdit, QToolBar, QMainWindow, QTabWidget, QInputDialog, QToolButton,QButtonGroup,
-            QStackedWidget, QStackedLayout, QErrorMessage)
+            QStackedWidget, QStackedLayout, QErrorMessage, QColorDialog,QSpinBox)
 from PyQt6.QtGui \
     import (QIntValidator, QImageWriter, QStandardItemModel, QStandardItem,
             QValidator, QWheelEvent,QTextDocument)
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtPrintSupport import (QPrintPreviewDialog, QPrintPreviewWidget,
                                   QPrinter)
+
 from icons import Icon
 try:
     from matplotlib.figure import Figure
@@ -1188,34 +1189,76 @@ class CreateModel(QDialog):
         for i in range(10):
             self.layout.removeWidget(self.gridButton.button(i))
 
+        self.resize(800,600)
+
         #on ajoute la bonne fenêtre en fonction de la fonction choisie
         container = self.rows[0]
         main_layout = QVBoxLayout()
-
+        main_layout.setContentsMargins(25, 0, 25, 0)
         #Name of the modele to display
         headerName = QHBoxLayout()
         labelName = QLabel(" <h2>Modèle " + name +"</h2>" ,self)
         labelName.setTextFormat(Qt.TextFormat.RichText)
-        labelName.setMargin(50)
+        labelName.setMargin(25)
         headerName.addWidget(labelName)
         headerName.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
+        #ajouter tout les paramètres via un dico in to array
+        #faire un compte de toutes les possibilités de personnalisations et paf
+
+        # Pour personnaliser le tracé il faut mettre un argument line=go.Scatter.Line(args) dans le go.Scatter()
+        #Line prend comme argument -> color, dash , width
+        personalisationlayout = QVBoxLayout()
+        personalisationlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+
+        #color
+        self.colorButton = QPushButton("Pick a Color")
+        self.colorButton.setMinimumSize(150,25)
+        self.colorButton.clicked.connect(self.colorChanged)
+
+        # colorLayout
+        colorLayout = QHBoxLayout()
+        colorLayout.addWidget(QLabel("Color : "))
+        colorLayout.addWidget(self.colorButton)
+
+        #dash
+        dashComboBox = QComboBox()
+        dashComboBox.setMinimumSize(150,25)
+        dashComboBox.addItems(['solid','dot', 'dash', 'longdash', 'dashdot', 'longdashdot'])
+        dashComboBox.activated.connect(lambda : self.dashChanged(dashComboBox))
+
+        #dash layout
+        dashLayout = QHBoxLayout()
+        dashLayout.addWidget(QLabel("Type de lignes :"))
+        dashLayout.addWidget(dashComboBox)
 
 
+        #width
+        widthBox = QSpinBox()
+        widthBox.setMinimumSize(150, 25)
+        widthBox.setRange(1,15)
+        widthBox.valueChanged.connect(lambda :self.widthChanged(widthBox))
+
+        #width Layout
+        widthLayout = QHBoxLayout()
+        widthLayout.addWidget(QLabel("Epaisseur de ligne: "))
+        widthLayout.addWidget(widthBox)
+
+
+        personalisationlayout.addLayout(colorLayout)
+        personalisationlayout.addLayout(dashLayout)
+        personalisationlayout.addLayout(widthLayout)
+
+        #adding to the layout all the components
         main_layout.addLayout(headerName)
+        main_layout.addLayout(personalisationlayout)
+
+
 
         #add a button to directly evaluate the data with a modele instead of create a new curve with given argument
         evaluateButton = QPushButton("Evaluate")
-
         evaluateButton.clicked.connect(lambda:  self.evaluate(name))
-
         self.button_box.addWidget(evaluateButton)
-        #il manque la connection
-        """
-            Il faut ajouter tout les paramètres possibles pour chaque modèle avec un switch et ensuite dans apply il faut tout récupérer
-            et envoyer vers une nouvelle fonction pour l'afficher 
-            Pensez à inclure les choix de customisations pour plotly avec le type de ligne (doted/ épais) et les points aussi)
-        """
 
         container.addLayout(main_layout)
 
@@ -1229,6 +1272,19 @@ class CreateModel(QDialog):
         """ send the parameters to the graph and reload"""
         print("it applies")
 
+    #All 3 connexion for the 3 personnalisation parameters
+    def colorChanged(self):
+        colorDialog = QColorDialog(self)
+        colorPick = colorDialog.getColor()
+        #c'est la valeur de rgb color qu'il faudra renvoyer
+        self.rgbColor = "rgb("+str(colorPick.red())+","+ str(colorPick.green()) +","+ str(colorPick.blue())+')'
+        #setting up the background like the chosen color to let the user know which color he pickec
+        self.colorButton.setStyleSheet("background-color:"+self.rgbColor)
+
+    def dashChanged(self, qcombobox:QComboBox):
+        self.choiceDash = qcombobox.currentText()
+    def widthChanged(self,spinBox:QSpinBox):
+        self.widthChoice = spinBox.value()
 
     def create_buttonbox(self):
         """Returns a QDialogButtonBox with Ok and Cancel"""
