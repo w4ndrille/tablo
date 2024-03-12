@@ -56,6 +56,7 @@ FONCTIONNEMENT :
 
 """
 class Graph(QWebEngineView):
+
     def __init__(self, parent:QMainWindow, figs = None):
         super().__init__()
         self.parent = parent
@@ -86,6 +87,21 @@ class Graph(QWebEngineView):
 
         self.update_chart()
 
+        # a dict which contains all the possible functions to avoid the switch / infitite else if case
+
+        self.functionDict = {
+            'polynomiale': self.polynomiale,
+            'linéaire': self.linear,
+            'affine': self.affine,
+            'logarithme': self.logarithm,
+            'exponentiale': self.exponential,
+            'parabole': self.parabole,
+            'sigmoïde': self.sigmoide,
+            'michaelis': self.michaelis,
+            'gauss': self.gauss,
+            'lorentz': self.lorentz
+        }
+
 
     def _init_chart(self):
         #the first html balise for the widget
@@ -107,8 +123,8 @@ class Graph(QWebEngineView):
             if x == "" or y == "":
                 break
 
-            self.xValues.append(int(x))
-            self.yValues.append(int(y))
+            self.xValues.append(float(x))
+            self.yValues.append(float(y))
 
             inc += 1
 
@@ -168,37 +184,62 @@ class Graph(QWebEngineView):
         self.chart += '</body></html>'
         self.setHtml(self.chart)
 
+
     def evaluate(self, name:str):
-        #a dict which contains all the possible functions to avoid the switch / infitite else if case
-        functionDict = {
-            'polynomiale' : self.polynomiale,
-            'linéaire': self.linear,
-            'affine' : self.affine,
-            'logarithme' : self.logarithm,
-            'exponentiale' : self.exponential,
-            'parabole' : self.parabole,
-            'sigmoïde' : self.sigmoide,
-            'michaelis': self.michaelis,
-            'gauss' : self.gauss,
-            'lorentz' : self.lorentz
-        }
-        print(name.lower())
-        #getting the optimal parameters and the covariance matrix
-        popt, pcov = curve_fit(functionDict[name.lower()],self.xValues,self.yValues)
-        maxX,minX = max(self.xValues),min(self.xValues)
-        maxY,minY = max(self.yValues),min(self.yValues)
 
-        x = np.arange(minX-10,maxX+10,0.1)
-        y = functionDict[name.lower()](x,*popt)
 
-        self.modelisationCurves.append(go.Scatter(x=x,y=y,name="Estimation de la courbe des données"))
-        self.fig.add_traces(go.Scatter(x=x,y=y,name="Estimation de la courbe"))
-        #adding the modele
+        # testing if there is  data
+        if self.xValues ==  [] or self.yValues == [] :
+            return False
+        else:
 
-        self.chart = "<html><body>"
-        self.chart += plotly.offline.plot(self.fig,output_type='div', include_plotlyjs='cdn')
-        self.chart += "</body></html>"
-        self.setHtml(self.chart)
+
+            #getting the optimal parameters and the covariance matrix
+            popt, pcov = curve_fit(self.functionDict[name.lower()],self.xValues,self.yValues)
+            maxX,minX = max(self.xValues),min(self.xValues)
+
+            x = np.arange(minX-10,maxX+10,0.1)
+            y = self.functionDict[name.lower()](x,*popt)
+
+            self.modelisationCurves.append(go.Scatter(x=x,y=y,name="Estimation de la courbe des données"))
+            self.fig.add_traces(go.Scatter(x=x,y=y,name="Estimation de la courbe"))
+            #adding the modele
+
+            self.chart = "<html><body>"
+            self.chart += plotly.offline.plot(self.fig,output_type='div', include_plotlyjs='cdn')
+            self.chart += "</body></html>"
+            self.setHtml(self.chart)
+
+            return True
+
+
+    def auto_evaluate(self):
+        #try every function to chose the better one with the pcov parameters
+        all_variances = {}
+        #create an dict to contain the sum of all the variances of all the parameters
+        sum_variances = {}
+        if self.xValues == [] or self.yValues == []:
+            return False
+        else:
+            for fct in self.functionDict.keys():
+
+
+                # getting the optimal parameters and the covariance matrix
+                 if fct =="logarithme" and min(self.xValues) <= 0 :
+                    continue
+                 popt, pcov = curve_fit(self.functionDict[fct], self.xValues, self.yValues)
+                 all_variances[fct] =sqrt(diag(pcov))
+
+                 sum = 0
+                 for var in sqrt(diag(pcov)):
+                    sum += var
+                 sum_variances[fct] = sum
+            return True
+
+
+        #then plotting the right modele
+        self.evaluate( min(sum_variances, key=sum_variances.get))
+
     # All functions to be evaluate
     def polynomiale(self,x,a:float, b:float, c:float,d:float,e:float,f:float,g:float,h:float):
         return a*x**7+b*x**6 + c*x**5 + d*x**4 + e*x**3 + f*x**2 + g*x + h
@@ -216,8 +257,8 @@ class Graph(QWebEngineView):
     def parabole(self,x,a:float,b:float,c:float):
         return a*x**2 + b*x + c
 
-    def sigmoide(self, x, a : float):
-        return 1/(1+np.exp(-a *x))
+    def sigmoide(self, x, a : float, x0:float):
+        return 1/(1+ exp(-a *(x-x0)))
 
     def michaelis(self,x,K_M:float,v_max:float):
         #where x = S0
@@ -225,4 +266,4 @@ class Graph(QWebEngineView):
     def gauss(self,x,mu:float,sigma:float):
         return exp(-(x-mu)**2/(2*sigma**2))/(sigma*sqrt(2*pi))
     def lorentz(self,x,gamma:float,x_0 : float):
-        return (gamma/1*pi)/((gamma**2/4)+(x-x_0)**2)
+        return (gamma/2*pi)/((gamma**2/4)+(x-x_0)**2)

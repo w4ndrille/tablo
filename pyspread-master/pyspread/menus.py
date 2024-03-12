@@ -119,8 +119,6 @@ class GraphMenu(QMenu):
         self.parent = parent
         self.addAction(actions.newWindows)
 
-
-
 class ModeleMenu(QMenu):
 
     def __init__(self,parent: QWidget, actions : GraphWindowActions):

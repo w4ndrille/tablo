@@ -214,6 +214,9 @@ class IconPath:
     gaussian = MODELE_PATH /'gaussian.svg'
     lorentz = MODELE_PATH /'lorentz.svg'
 
+    #Auto evaluate
+    auto_evaluate = ACTION_PATH / 'auto_evaluate.svg'
+
 class IconConverter(type):
     """Meta class that provides QIcons for IconPaths icons"""
 

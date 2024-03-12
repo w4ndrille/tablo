@@ -1052,6 +1052,11 @@ class GraphWindowActions(AttrDict):
                                  icon=Icon.insert_chart,
                                  checkable=True,
                                  statustip='Insert a new model ')
+        self.auto_evaluate = Action(self.parent, "&Auto evaluate",
+                                    self.parent.workflows.auto_evaluate,
+                                    icon=Icon.auto_evaluate,
+                                    checkable=True,
+                                    statustip="Trouve la modélisation la plus adéquate")
 
     def create_modelisation_actions(self):
         self.update = Action(self.parent, "&Update Modelisation",

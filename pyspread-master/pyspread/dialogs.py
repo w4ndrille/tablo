@@ -68,7 +68,7 @@ from PyQt6.QtWidgets \
             QTextBrowser, QCheckBox, QGridLayout, QLayout, QHBoxLayout,
             QPushButton, QWidget, QComboBox, QTableView, QAbstractItemView,
             QPlainTextEdit, QToolBar, QMainWindow, QTabWidget, QInputDialog, QToolButton,QButtonGroup,
-            QStackedWidget, QStackedLayout)
+            QStackedWidget, QStackedLayout, QErrorMessage)
 from PyQt6.QtGui \
     import (QIntValidator, QImageWriter, QStandardItemModel, QStandardItem,
             QValidator, QWheelEvent,QTextDocument)
@@ -1206,7 +1206,9 @@ class CreateModel(QDialog):
 
         #add a button to directly evaluate the data with a modele instead of create a new curve with given argument
         evaluateButton = QPushButton("Evaluate")
+
         evaluateButton.clicked.connect(lambda:  self.evaluate(name))
+
         self.button_box.addWidget(evaluateButton)
         #il manque la connection
         """
@@ -1218,8 +1220,11 @@ class CreateModel(QDialog):
         container.addLayout(main_layout)
 
     def evaluate(self,name:str):
-        self.parent.graph.evaluate(name)
-        self.close()
+        if  not self.parent.graph.evaluate(name) :
+            QErrorMessage(self).showMessage("Erreur d'évaluation : Aucune donnée à évaluer")
+            #Chnagez un QLabel pour indiquer l'erreur
+        else:
+            self.close()
     def apply(self):
         """ send the parameters to the graph and reload"""
         print("it applies")
