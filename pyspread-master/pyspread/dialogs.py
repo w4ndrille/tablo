@@ -1206,7 +1206,7 @@ class CreateModel(QDialog):
 
         #add a button to directly evaluate the data with a modele instead of create a new curve with given argument
         evaluateButton = QPushButton("Evaluate")
-        evaluateButton.clicked.connect(lambda:  self.parent.graph.evaluate(name))
+        evaluateButton.clicked.connect(lambda:  self.evaluate(name))
         self.button_box.addWidget(evaluateButton)
         #il manque la connection
         """
@@ -1217,6 +1217,9 @@ class CreateModel(QDialog):
 
         container.addLayout(main_layout)
 
+    def evaluate(self,name:str):
+        self.parent.graph.evaluate(name)
+        self.close()
     def apply(self):
         """ send the parameters to the graph and reload"""
         print("it applies")
