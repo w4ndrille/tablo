@@ -234,11 +234,12 @@ class Graph(QWebEngineView):
                  for var in sqrt(diag(pcov)):
                     sum += var
                  sum_variances[fct] = sum
-            return True
+
 
 
         #then plotting the right modele
         self.evaluate( min(sum_variances, key=sum_variances.get))
+        return True
 
     # All functions to be evaluate
     def polynomiale(self,x,a:float, b:float, c:float,d:float,e:float,f:float,g:float,h:float):

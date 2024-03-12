@@ -20,4 +20,5 @@ class GraphWorkflows:
         if not self.graph_window.graph.auto_evaluate():
             QErrorMessage(self.graph_window.graph).showMessage("Erreur d'évaluation : Aucune donnée à évaluer")
 
+
 ###FONCTION EXEMPLE
