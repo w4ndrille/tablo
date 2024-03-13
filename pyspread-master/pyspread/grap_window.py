@@ -182,7 +182,7 @@ class GraphWindow(QMainWindow):
         self.showParameters = ShowParametersWidget(self)
         splitterBtResNInsert.addWidget(self.showParameters)
         splitterBtResNInsert.addWidget(modele_insertion)
-        splitterBtResNInsert.setSizes((50,50))
+        splitterBtResNInsert.setSizes((100,100))
 
         self.splitter.addWidget(splitterBtResNInsert)
         self.splitter.addWidget(self.graph)
@@ -586,5 +586,5 @@ class GraphWindow(QMainWindow):
     def update(self):
 
         self.close()
-        self.parent.workflows.new_window(self.graph.figs,True)
+        self.parent.workflows.new_window(self.graph.figs[1:],True)
         self = None

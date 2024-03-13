@@ -10,7 +10,7 @@ from PyQt6.QtWidgets \
     import (QTableView, QStyledItemDelegate, QTabBar, QWidget, QMainWindow,
             QStyleOptionViewItem, QApplication, QStyle, QAbstractItemDelegate,
             QHeaderView, QFontDialog, QInputDialog, QLineEdit,
-            QAbstractItemView,QGraphicsItem)
+            QAbstractItemView,QGraphicsItem,QErrorMessage)
 from PyQt6.QtGui \
     import (QColor, QBrush, QFont, QPainter, QPalette, QImage, QKeyEvent,
             QTextOption, QAbstractTextDocumentLayout, QTextDocument,
@@ -31,7 +31,7 @@ import numpy as np
 from numpy import *
 import plotly
 import plotly.graph_objects as go
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, OptimizeWarning
 
 try:
     import matplotlib
@@ -71,22 +71,78 @@ class Graph(QWebEngineView):
         self.yValues = []
 
         self.get_series()
-        self._init_chart()
+
         # creating another array to stock the modelisation
         self.modelisationCurves = []
+        #must contains all the curves which are build from the creation modele | this array will be useful when we will want to delete certains curves
+        self.common_curves = []
 
         # getting all the figures on a reload
         if figs is None:
             self.figs = []
+
         else:
             self.figs = figs
             self.rebuild()
-            
         self.update_chart()
 
 
+        self.allParameters = {
+            'polynomiale': [["Polynomiale", """ <style> div{ text-align:center} </style>
+                     <div>y = ax<sup>7</sup> + bx<sup>6</sup> + cx<sup>5</sup> + dx<sup>4</sup> + ex<sup>3</sup> + fx<sup>2</sup> +gx+ h </div>"""
+                             ], "a", "b", "c", "d", "e", "f", "g", "h"],
+            'linéaire': [["Linéaire",
+                          """ <style> div{ text-align:center} </style>
+                          <div> y = ax </div>
+                          """], "a"],
+            'affine': [["Affine", "<style> div{ text-align:center} </style> <div> y = ax + b </div>"
+                        ], "a", "b"],
+            'logarithme': [["Logarithme", " <style> div{ text-align:center} </style> <div> y = a*ln(x+b) </div>"
+                            ], "a", "b"],
+            'exponentiale': [["Exponentiel", " <style> div{ text-align:center} </style> <div>y = exp(a*x+b )</div>"
+                              ], "a", "b"],
+            'parabole': [
+                ["Parabole", "<style> div{ text-align:center} </style> <div> y = ax<sup>2</sup> + bx + c </div>"
+                 ], "a", "b", "c"],
+            'sigmoïde': [["Sigmoïde",
+                          """
+                          <style> 
+                            div{text-align:center}
+                         </style>
 
+                          <div >
+                            <span>  1 </span> <br>
+                            <span> <b>-------------</b> </span> <br>
+                            <span > 1 + exp(-&lambda;(x - x<sub>0</sub>))</span>
+                          </div> 
+                          """
+                          ], "<span>&lambda;</span>", "x<sub>0</sub>"],
+            'michaelis': [["Michaelis", """<style> div{ text-align:center} </style> 
+                                                    <div>
+                                                        <span>  v<sub>max</sub> * x </span> <br>
+                                                        <span> <b>----------------</b> </span> <br>
+                                                        <span> K<sub>M</sub> + x </span>
+                                                    </div>"""
+                           ], "v<sub>max</sub>", "K<sub>M</sub>"],
+            'gauss': [["Gauss", """<style> div{ text-align:center} sup{font-size:24px} </style> 
+                                          <div> <span>e<sup> -(x-&mu;)²/(2&sigma;²)</sup> </span> <br>
+                                                <span> <b> ------------------- </b> </span> <br>
+                                                <span> &sigma; &radic;( 2&pi;) </span>
+                                          </div>"""
+                       ], "<span>&sigma;</span>", "<span>&mu;</span>"],
+            'lorentz': [["Lorentz",
+                         """
+                         <style> div{text-align:center} </style> 
+                         <div>
+                            <span> &Gamma; </span><br>
+                            <span>----</span><br>
+                            <span>2&pi;</span><br>
+                            <span> ------------------------------- </span> <br>
+                            <span> &Gamma;²/4 + (x-x<sub>0</sub>)² </span> 
+                        </div>"""
+                         ], "<span>&Gamma;</span>", "x<sub>0</sub>;"]
 
+        }
 
         # a dict which contains all the possible functions to avoid the switch / infitite else if case
 
@@ -104,9 +160,7 @@ class Graph(QWebEngineView):
         }
 
 
-    def _init_chart(self):
-        #the first html balise for the widget
-        self.chart = '<html><body>'
+
 
 
     def get_series(self, colIndexX :int = 0,colIndexY :int = 1):
@@ -156,7 +210,7 @@ class Graph(QWebEngineView):
         """
         Update the chart with all the series
         """
-
+        self.chart = "<html><body>"
         self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
         self.figs.append(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
         #Pour ajouter les légends
@@ -175,7 +229,7 @@ class Graph(QWebEngineView):
         self.setHtml(self.chart)
 
 
-    def add_modele(self,equation:str ,from_:int,to_:int):
+    def add_manual_modele(self,equation:str ,from_:int,to_:int):
         self.chart = "<html><body>"
 
         #create a np array from -100 to 100 and create the y array associated
@@ -191,19 +245,41 @@ class Graph(QWebEngineView):
         self.chart += '</body></html>'
         self.setHtml(self.chart)
 
+    def add_common_modele(self,name:str , parameters, perso_choices,from_,to_):
+        self.chart = "<html><body>"
+        x = np.arange(from_,to_,0.1)
+        y = self.functionDict[name.lower()](x,*parameters)
+        for i in parameters:
+            name += " " + str(i) +","
+        trace = go.Scatter(x=x,y=y,name=name,line=go.scatter.Line(color=perso_choices[0],dash=perso_choices[1],width=perso_choices[2]))
+        self.common_curves.append(trace)
+        self.fig.add_traces(trace)
+        self.chart += plotly.offline.plot(self.fig,output_type='div', include_plotlyjs='cdn')
+        self.chart += "</body></html>"
+        self.setHtml(self.chart)
 
     def evaluate(self, name:str):
 
-        self.parent.showParameters.show()
 
         # testing if there is  data
         if self.xValues ==  [] or self.yValues == [] :
             return False
         else:
 
-
+            if name.lower() == "logarithme" and min(self.xValues) <= 0:
+                QErrorMessage(self).showMessage("Logarithme mais x <= 0")
+                return True
             #getting the optimal parameters and the covariance matrix
-            popt, pcov = curve_fit(self.functionDict[name.lower()],self.xValues,self.yValues)
+            try:
+                popt, pcov = curve_fit(self.functionDict[name.lower()],self.xValues,self.yValues)
+
+            except RuntimeError:
+                QErrorMessage(self).showMessage("Erreur: Le modèle ne peut pas être évaluer")
+            except RuntimeWarning:
+                print("Overflow")
+            except OptimizeWarning:
+                print("impossibilité de calculer la variance")
+
             maxX,minX = max(self.xValues),min(self.xValues)
 
             x = np.arange(minX-10,maxX+10,0.1)
@@ -225,6 +301,10 @@ class Graph(QWebEngineView):
             self.chart += "</body></html>"
             self.setHtml(self.chart)
 
+            #sending the name and the array of parameters to the parameters widget
+            self.parent.showParameters.setParameters(name.lower(),popt,sqrt(diag(pcov)))
+            self.parent.showParameters.show()
+
             return True
 
 
@@ -242,8 +322,17 @@ class Graph(QWebEngineView):
                 # getting the optimal parameters and the covariance matrix
                  if fct =="logarithme" and min(self.xValues) <= 0 :
                     continue
-                 popt, pcov = curve_fit(self.functionDict[fct], self.xValues, self.yValues)
+                 try:
+                    popt, pcov = curve_fit(self.functionDict[fct], self.xValues, self.yValues)
+                 except RuntimeError:
+                     QErrorMessage(self).showMessage("Erreur: Le modèle ne peut pas être évaluer")
+                 except RuntimeWarning:
+                     print("Overflow")
+                 except OptimizeWarning:
+                     print("impossibilité de calculer la variance")
+
                  all_variances[fct] =sqrt(diag(pcov))
+
 
                  sum = 0
                  for var in sqrt(diag(pcov)):
@@ -251,8 +340,8 @@ class Graph(QWebEngineView):
                  sum_variances[fct] = sum
 
         #debugging, uncomment to see
-        print(all_variances)
-        print(sum_variances)
+        #print(all_variances)
+        #print(sum_variances)
 
         #then plotting the right modele
         self.evaluate( min(sum_variances, key=sum_variances.get))

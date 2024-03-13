@@ -101,6 +101,8 @@ except ImportError:
     from settings import (TUTORIAL_PATH, MANUAL_PATH, MPL_TEMPLATE_PATH,
                           RPY2_TEMPLATE_PATH, PLOT9_TEMPLATE_PATH)
 
+import numpy as np
+
 
 class DiscardChangesDialog:
     """Modal dialog that asks if the user wants to discard or save unsaved data
@@ -1091,6 +1093,11 @@ class CreateModel(QDialog):
         self.setWindowTitle("Create a new Model")
         self.rows = []
         self.dialog_ui()
+        self.allParameters = self.parent.graph.allParameters
+        #les 3 paramètres de personnalisation
+        self.rgbColor = None
+        self.choiceDash = None
+        self.widthChoice = None
 
     def dialog_ui(self):
         #Layout
@@ -1184,17 +1191,19 @@ class CreateModel(QDialog):
         return button
 
     def change(self,name:str=""):
+        #connection of the apply button
+        self.acceptButton.clicked.connect(lambda : self.apply(name))
 
         #On enlève tout les boutons
         for i in range(10):
             self.layout.removeWidget(self.gridButton.button(i))
 
-        self.resize(800,600)
+        self.resize(200,200)
 
         #on ajoute la bonne fenêtre en fonction de la fonction choisie
         container = self.rows[0]
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(25, 0, 25, 0)
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setContentsMargins(25, 0, 25, 0)
         #Name of the modele to display
         headerName = QHBoxLayout()
         labelName = QLabel(" <h2>Modèle " + name +"</h2>" ,self)
@@ -1206,52 +1215,76 @@ class CreateModel(QDialog):
         #ajouter tout les paramètres via un dico in to array
         #faire un compte de toutes les possibilités de personnalisations et paf
 
+        ###
         # Pour personnaliser le tracé il faut mettre un argument line=go.Scatter.Line(args) dans le go.Scatter()
         #Line prend comme argument -> color, dash , width
         personalisationlayout = QVBoxLayout()
         personalisationlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
-
         #color
         self.colorButton = QPushButton("Pick a Color")
         self.colorButton.setMinimumSize(150,25)
         self.colorButton.clicked.connect(self.colorChanged)
-
         # colorLayout
         colorLayout = QHBoxLayout()
         colorLayout.addWidget(QLabel("Color : "))
         colorLayout.addWidget(self.colorButton)
-
         #dash
         dashComboBox = QComboBox()
         dashComboBox.setMinimumSize(150,25)
         dashComboBox.addItems(['solid','dot', 'dash', 'longdash', 'dashdot', 'longdashdot'])
         dashComboBox.activated.connect(lambda : self.dashChanged(dashComboBox))
-
         #dash layout
         dashLayout = QHBoxLayout()
         dashLayout.addWidget(QLabel("Type de lignes :"))
         dashLayout.addWidget(dashComboBox)
-
-
         #width
         widthBox = QSpinBox()
         widthBox.setMinimumSize(150, 25)
         widthBox.setRange(1,15)
         widthBox.valueChanged.connect(lambda :self.widthChanged(widthBox))
-
         #width Layout
         widthLayout = QHBoxLayout()
         widthLayout.addWidget(QLabel("Epaisseur de ligne: "))
         widthLayout.addWidget(widthBox)
-
-
         personalisationlayout.addLayout(colorLayout)
         personalisationlayout.addLayout(dashLayout)
         personalisationlayout.addLayout(widthLayout)
+        ###
 
+        parameterChoice = QVBoxLayout()
+        equationLabel = QLabel(self.allParameters[name.lower()][0][1])
+        equationLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        parameterChoice.addWidget(equationLabel)
+
+        h1box = QHBoxLayout()
+        h1box.addWidget(QLabel("from:"))
+        from_ = QLineEdit()
+        h1box.addWidget(from_)
+        h1box.addWidget(QLabel("to:"))
+        to_ = QLineEdit()
+        h1box.addWidget(to_)
+        parameterChoice.addLayout(h1box)
+
+        for i in range(len(self.allParameters[name.lower()]) -1):
+            hbox = QHBoxLayout()
+            hbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            hbox.addWidget(QLabel(self.allParameters[name.lower()][i+1] + " : "))
+
+            numberHolder = QLineEdit()
+            numberHolder.setMaxLength(12)
+            numberHolder.setMaximumSize(80,25)
+            hbox.addWidget(numberHolder)
+
+            parameterChoice.addLayout(hbox)
+
+
+
+        hbox = QHBoxLayout()
+        hbox.addLayout(parameterChoice)
+        hbox.addLayout(personalisationlayout)
         #adding to the layout all the components
-        main_layout.addLayout(headerName)
-        main_layout.addLayout(personalisationlayout)
+        self.main_layout.addLayout(headerName)
+        self.main_layout.addLayout(hbox)
 
 
 
@@ -1260,7 +1293,7 @@ class CreateModel(QDialog):
         evaluateButton.clicked.connect(lambda:  self.evaluate(name))
         self.button_box.addWidget(evaluateButton)
 
-        container.addLayout(main_layout)
+        container.addLayout(self.main_layout)
 
     def evaluate(self,name:str):
         if  not self.parent.graph.evaluate(name) :
@@ -1268,9 +1301,73 @@ class CreateModel(QDialog):
             #Chnagez un QLabel pour indiquer l'erreur
         else:
             self.close()
-    def apply(self):
-        """ send the parameters to the graph and reload"""
-        print("it applies")
+
+    def apply(self,name:str=None):
+        """Send all the parameters to plot the corresponding curve"""
+        #handling the case the user chose nothing
+        if self.rgbColor is None:
+            rgbColor = "rgb(255,0,0)"
+        else:
+            rgbColor = self.rgbColor
+        if self.choiceDash is None:
+            choiceDash = "solid"
+        else:
+            choiceDash = self.choiceDash
+        if self.widthChoice is None :
+            widthChoice = 1
+        else:
+            widthChoice = self.widthChoice
+
+        parameters = []
+
+        """ to better understand you can see all the boxes in each other like that
+        print(self.main_layout) #vbox
+        print(self.main_layout.itemAt(1)) #hbox
+        print(self.main_layout.itemAt(1).itemAt(0))#vbox
+        print(self.main_layout.itemAt(1).itemAt(0).itemAt(1))#first hbox
+        """
+
+        inc = 2
+        vbox = self.main_layout.itemAt(1).itemAt(0)#getting the hbox -> vbox
+        hbox = vbox.itemAt(inc)# 1 because 0 is the  and from to
+
+        while hbox is not None: #same strategy like the reset functions
+            #getting the value of the QLineEdit
+            parm = hbox.itemAt(1).widget().text()
+            #avoiding the case where the user don't specify a value
+            if parm == '':
+                print(parm)
+                parameters.append(0)
+            else:
+                parameters.append(float(parm))
+            inc += 1
+            #going for the next hbox
+            hbox = vbox.itemAt(inc)
+
+        from_ = vbox.itemAt(1).itemAt(1).widget().text()
+        to_ = vbox.itemAt(1).itemAt(3).widget().text()
+        try:
+            to_,from_ = float(to_),float(from_)
+        except ValueError:
+            QErrorMessage(self).showMessage("Erreur : entrée non numérique")
+            return
+
+        if to_ == '' and from_ == '':
+            from_,to_ = -100,100
+        elif from_ == '':
+            to_ = float(to_)
+            from_ = to_ - 100
+
+        elif to_ == '':
+            from_ = float(from_)
+            to_ = from_ + 100
+
+
+
+        self.parent.graph.add_common_modele(name,np.array(parameters),[rgbColor,choiceDash,widthChoice],from_,to_)
+
+        self.close()
+
 
     #All 3 connexion for the 3 personnalisation parameters
     def colorChanged(self):
@@ -1280,27 +1377,28 @@ class CreateModel(QDialog):
         self.rgbColor = "rgb("+str(colorPick.red())+","+ str(colorPick.green()) +","+ str(colorPick.blue())+')'
         #setting up the background like the chosen color to let the user know which color he pickec
         self.colorButton.setStyleSheet("background-color:"+self.rgbColor)
-
     def dashChanged(self, qcombobox:QComboBox):
         self.choiceDash = qcombobox.currentText()
     def widthChanged(self,spinBox:QSpinBox):
         self.widthChoice = spinBox.value()
 
+
+
     def create_buttonbox(self):
         """Returns a QDialogButtonBox with Ok and Cancel"""
         button_box = QHBoxLayout()
 
-        acceptButton = QPushButton("Apply")
+        self.acceptButton = QPushButton("Apply")
         cancelButton = QPushButton("Cancel")
-        resetButton = QPushButton("Reset")
+        resetButton = QPushButton("Return")
 
         #Connect
-        acceptButton.clicked.connect(self.apply)
+
         cancelButton.clicked.connect(self.reject)
         resetButton.clicked.connect(self.reset)
 
         button_box.addWidget(resetButton)
-        button_box.addWidget(acceptButton)
+        button_box.addWidget(self.acceptButton)
         button_box.addWidget(cancelButton)
         return button_box
 

@@ -56,7 +56,7 @@ from PyQt6.QtWidgets \
             QPushButton, QWidget, QComboBox, QTableView, QAbstractItemView,
             QPlainTextEdit, QToolBar, QMainWindow, QTabWidget, QInputDialog, QToolButton,QButtonGroup,
             QStackedWidget, QStackedLayout, QErrorMessage, QColorDialog,QSpinBox,QFontComboBox,QSizePolicy,QMenu)
-from PyQt6.QtCore import pyqtSignal, QSize, Qt, QModelIndex, QPoint
+from PyQt6.QtCore import pyqtSignal, QSize, Qt, QModelIndex, QPoint, QRect
 
 from PyQt6.QtGui import (QPalette, QColor, QFont, QIntValidator, QCursor,
                          QIcon, QAction)
@@ -69,7 +69,7 @@ except ImportError:
     from actions import Action
     from icons import Icon
     from lib.csv import typehandlers, currencies
-
+import numpy as np
 
 class MultiStateBitmapButton(QToolButton):
     """QToolButton that cycles through arbitrary states
@@ -841,47 +841,71 @@ class HelpBrowser(QTextBrowser):
                                            'fenced-code-blocks'])
 
 class ShowParametersWidget(QWidget):
-    def __init__(self, parent: QWidget,
-                 size: Tuple[int, int] = (1000, 700)):
+    def __init__(self, parent: QWidget,):
         super().__init__(parent)
 
         self.parent = parent
-        self.resize(*size)
+
 
         #hide on start waiting the need to display the numerical value of some parameters
         self.hide()
-
-
+        """
+        display: inline-block;
+        vertical-align: middle;
+        margin: 0 0.2em 0.4ex;
+        text-align:center;"""
         self.dialog_ui()
+        self.allParameters = self.parent.graph.allParameters
 
     def dialog_ui(self):
         #Layout
-        layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
+        #display the parameters and in front the variance with QHBoxLayout
 
-        self.editor = QPlainTextEdit(self)
-        self.splitter = QSplitter(Qt.Orientation.Vertical,self)
-        self.from_ = QLineEdit(self)
-        self.to_ = QLineEdit(self)
+        self.setLayout(self.main_layout)
 
-        hsplitter = QSplitter(Qt.Orientation.Horizontal,self)
-        self.from_.setPlaceholderText("from")
-        self.to_.setPlaceholderText("to")
-        hsplitter.addWidget(self.from_)
-        hsplitter.addWidget(self.to_)
-        #Avoid to move the two texts
-        hsplitter.setCollapsible(0,False)
-        hsplitter.setCollapsible(1,False)
+    def setParameters(self, name:str,popt,pvar):
+        self.reset()
+        """
+        name: nom de la fonction
+        popt: paramètres optimaux
+        pvar: variance des paramètres optimaux qui sert à donner un intervalle de confiance du type x +- delta
+        """
+        #The layout which contains everything
+        vbox = QVBoxLayout()
+        #name and equation
+        nameTitle = QLabel("<h2> " +self.allParameters[name][0][0]+ "</h2>")
+        nameTitle.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        equation = QLabel(self.allParameters[name][0][1])
+        equation.setAlignment(Qt.AlignmentFlag.AlignHCenter )
+        vbox.addWidget(nameTitle)
+        vbox.addWidget(equation)
 
-        self.splitter.addWidget(hsplitter)
-        self.splitter.addWidget(self.editor)
-        self.splitter.setOpaqueResize(False)
-        self.splitter.setSizes([9999, 9999])
+        #all the parameters
+        for i in range(len(self.allParameters[name] )-1): #with don't want the first array
+            hbox = QHBoxLayout()
+            popt = np.round(popt,6) #rounding the value if it is too tiny
+            pvar = np.round(pvar,6)
+            hbox.addWidget(QLabel(self.allParameters[name][i+1] +" : " + str(popt[i]) +"   Var: " + str(pvar[i])  ))
+            hbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            vbox.addLayout(hbox)
 
 
-        layout.addWidget(self.splitter)
+        self.main_layout.addLayout(vbox)
 
-        self.setLayout(layout)
 
+    def reset(self):
+        #getting one by one all the QHBoxLAyout
+        layout = self.main_layout.takeAt(0)
+        while layout != None:
+            self.main_layout.removeItem(layout)
+            widget = layout.itemAt(0)
+            #In the current layout, getting the Widget which is a QWidgetItem (that's sucks ) and setting is geometry to 0, to hide itself
+            while widget != None:
+                layout.removeItem(widget)
+                widget.setGeometry(QRect(0,0,0,0))
+                widget = layout.itemAt(0)
+            layout = self.main_layout.takeAt(0)
 
 
 class InsertModel(QWidget):
@@ -928,13 +952,13 @@ class InsertModel(QWidget):
     def apply(self):
         """ send the parameters to the graph and reload"""
         if self.to_.text() == '' and self.from_.text() == '':
-            self.parent.graph.add_modele(self.editor.toPlainText(), -100, 100)
+            self.parent.graph.add_manual_modele(self.editor.toPlainText(), -100, 100)
         elif self.from_.text() == '':
-            self.parent.graph.add_modele(self.editor.toPlainText(), int(self.to_.text())-100, int(self.to_.text()))
+            self.parent.graph.add_manual_modele(self.editor.toPlainText(), int(self.to_.text())-100, int(self.to_.text()))
         elif self.to_.text() =='':
-            self.parent.graph.add_modele(self.editor.toPlainText(), int(self.from_.text()),int(self.from_.text())+100)
+            self.parent.graph.add_manual_modele(self.editor.toPlainText(), int(self.from_.text()),int(self.from_.text())+100)
         else:
-            self.parent.graph.add_modele(self.editor.toPlainText(),int(self.from_.text()),int(self.to_.text()))
+            self.parent.graph.add_manual_modele(self.editor.toPlainText(),int(self.from_.text()),int(self.to_.text()))
 
     def create_buttonbox(self):
         """Returns a QDialogButtonBox with Ok and Cancel"""
