@@ -66,26 +66,27 @@ class Graph(QWebEngineView):
         # the figure supporting our model
         self.fig = go.Figure()
 
-        #getting all the figures on a reload
+        # array of values or maybe array for multiploting
+        self.xValues = []
+        self.yValues = []
+
+        self.get_series()
+        self._init_chart()
+        # creating another array to stock the modelisation
+        self.modelisationCurves = []
+
+        # getting all the figures on a reload
         if figs is None:
             self.figs = []
         else:
             self.figs = figs
             self.rebuild()
-
-        #creating another array to stock the modelisation
-        self.modelisationCurves = []
-        #array of values or maybe array for multiploting
-        self.xValues= []
-        self.yValues = []
-
-
-
-        self.get_series()
-        self._init_chart()
-
-
+            
         self.update_chart()
+
+
+
+
 
         # a dict which contains all the possible functions to avoid the switch / infitite else if case
 
@@ -112,7 +113,7 @@ class Graph(QWebEngineView):
         """
         Getting the curve from X col and Y col
         """
-        max = 150 # it matches the maximum row index
+        max = self.model.shape[0] # it matches the maximum row index
         inc = 1 #start at 1 to avoid getting the physical meaning of the column
 
 
@@ -134,8 +135,14 @@ class Graph(QWebEngineView):
 
     def rebuild(self):
         self.chart = "<html><body>"
-        #create a np array from -100 to 100 and create the y array associated
+        self.fig = go.Figure()#redefining the figure
+        self.fig.update_layout(
+            xaxis_title=self.axisLabels[0],
+            yaxis_title=self.axisLabels[1],
+            legend_title="Légende",
 
+        )
+        self.fig.update_yaxes(exponentformat='E')
         for i in range(len(self.figs)):
 
             self.fig.add_traces(self.figs[i])
@@ -151,12 +158,12 @@ class Graph(QWebEngineView):
         """
 
         self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
-
+        self.figs.append(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
         #Pour ajouter les légends
         self.fig.update_layout(
             xaxis_title=self.axisLabels[0],
             yaxis_title=self.axisLabels[1],
-            legend_title="Legend title",
+            legend_title="Légende",
 
         )
 
@@ -187,6 +194,7 @@ class Graph(QWebEngineView):
 
     def evaluate(self, name:str):
 
+        self.parent.showParameters.show()
 
         # testing if there is  data
         if self.xValues ==  [] or self.yValues == [] :
@@ -201,8 +209,15 @@ class Graph(QWebEngineView):
             x = np.arange(minX-10,maxX+10,0.1)
             y = self.functionDict[name.lower()](x,*popt)
 
-            self.modelisationCurves.append(go.Scatter(x=x,y=y,name="Estimation de la courbe des données"))
-            self.fig.add_traces(go.Scatter(x=x,y=y,name="Estimation de la courbe"))
+            if len(self.modelisationCurves) == 1 : # si il y a déjà une modélisation, on la remplace, on rebuild et paf
+                self.modelisationCurves[0] = go.Scatter(x=x,y=y,name="Estimation de la courbe des données")
+                self.rebuild()
+            else:
+                self.modelisationCurves.append(go.Scatter(x=x,y=y,name="Estimation de la courbe des données"))
+
+
+            self.fig.add_traces(self.modelisationCurves[0])
+
             #adding the modele
 
             self.chart = "<html><body>"
@@ -236,6 +251,7 @@ class Graph(QWebEngineView):
                  sum_variances[fct] = sum
 
         #debugging, uncomment to see
+        print(all_variances)
         print(sum_variances)
 
         #then plotting the right modele

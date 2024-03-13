@@ -39,7 +39,7 @@ from pathlib import Path
 
 from PyQt6.QtCore import Qt, pyqtSignal, QEvent, QTimer, QRectF
 from PyQt6.QtWidgets import (QWidget, QMainWindow, QApplication,
-                             QMessageBox, QDockWidget, QVBoxLayout,
+                             QMessageBox, QDockWidget, QVBoxLayout, QHBoxLayout,
                              QStyleOptionViewItem, QSplitter, QDialog, QGraphicsItem, QLineEdit )
 try:
     from PyQt6.QtSvgWidgets import QSvgWidget
@@ -79,9 +79,9 @@ except ImportError:
     from toolbar import GraphMainToolBar
     from actions import GraphWindowActions
     from graph_workflows import GraphWorkflows
-    from widgets import Widgets
+    from widgets import Widgets, ShowParametersWidget, InsertModel
     from dialogs import (ApproveWarningDialog, PreferencesDialog, ManualDialog,
-                         TutorialDialog, PrintAreaDialog, PrintPreviewDialog,InsertModel,CreateModel)
+                         TutorialDialog, PrintAreaDialog, PrintPreviewDialog,CreateModel)
     from installer import DependenciesDialog
     from interfaces.pys import qt62qt5_fontweights
     from panels import MacroPanel
@@ -177,11 +177,19 @@ class GraphWindow(QMainWindow):
         modele_insertion = InsertModel(self)
 
 
-        self.splitter.addWidget(modele_insertion)
+        splitterBtResNInsert = QSplitter(Qt.Orientation.Vertical,self)
+        # defining as self to be able to change it along the evaluation
+        self.showParameters = ShowParametersWidget(self)
+        splitterBtResNInsert.addWidget(self.showParameters)
+        splitterBtResNInsert.addWidget(modele_insertion)
+        splitterBtResNInsert.setSizes((50,50))
+
+        self.splitter.addWidget(splitterBtResNInsert)
         self.splitter.addWidget(self.graph)
 
 
         self.splitter.setSizes((200,800))
+
         self.setCentralWidget(self.splitter)
 
 

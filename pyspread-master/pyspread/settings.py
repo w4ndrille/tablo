@@ -68,7 +68,7 @@ class Settings:
 
     """Names of widgets with persistant states"""
 
-    shape = 150, 100, 3
+    shape = 300, 100, 3
     """Default shape of initial grid (rows, columns, tables)"""
 
     maxshape = 1000000, 100000, 100

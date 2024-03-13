@@ -49,12 +49,15 @@ try:
     from markdown2 import markdown
 except ImportError:
     markdown = None
-
-from PyQt6.QtCore import pyqtSignal, QSize, Qt, QModelIndex, QPoint
 from PyQt6.QtWidgets \
-    import (QToolButton, QColorDialog, QFontComboBox, QComboBox, QSizePolicy,
-            QLineEdit, QPushButton, QTextBrowser, QWidget, QMainWindow,
-            QMenu, QTableView)
+    import (QApplication, QMessageBox, QFileDialog, QDialog, QLineEdit, QLabel,
+            QFormLayout, QVBoxLayout, QGroupBox, QDialogButtonBox, QSplitter,
+            QTextBrowser, QCheckBox, QGridLayout, QLayout, QHBoxLayout,
+            QPushButton, QWidget, QComboBox, QTableView, QAbstractItemView,
+            QPlainTextEdit, QToolBar, QMainWindow, QTabWidget, QInputDialog, QToolButton,QButtonGroup,
+            QStackedWidget, QStackedLayout, QErrorMessage, QColorDialog,QSpinBox,QFontComboBox,QSizePolicy,QMenu)
+from PyQt6.QtCore import pyqtSignal, QSize, Qt, QModelIndex, QPoint
+
 from PyQt6.QtGui import (QPalette, QColor, QFont, QIntValidator, QCursor,
                          QIcon, QAction)
 
@@ -836,3 +839,108 @@ class HelpBrowser(QTextBrowser):
 
         return markdown(help_text, extras=['metadata', 'code-friendly',
                                            'fenced-code-blocks'])
+
+class ShowParametersWidget(QWidget):
+    def __init__(self, parent: QWidget,
+                 size: Tuple[int, int] = (1000, 700)):
+        super().__init__(parent)
+
+        self.parent = parent
+        self.resize(*size)
+
+        #hide on start waiting the need to display the numerical value of some parameters
+        self.hide()
+
+
+        self.dialog_ui()
+
+    def dialog_ui(self):
+        #Layout
+        layout = QVBoxLayout()
+
+        self.editor = QPlainTextEdit(self)
+        self.splitter = QSplitter(Qt.Orientation.Vertical,self)
+        self.from_ = QLineEdit(self)
+        self.to_ = QLineEdit(self)
+
+        hsplitter = QSplitter(Qt.Orientation.Horizontal,self)
+        self.from_.setPlaceholderText("from")
+        self.to_.setPlaceholderText("to")
+        hsplitter.addWidget(self.from_)
+        hsplitter.addWidget(self.to_)
+        #Avoid to move the two texts
+        hsplitter.setCollapsible(0,False)
+        hsplitter.setCollapsible(1,False)
+
+        self.splitter.addWidget(hsplitter)
+        self.splitter.addWidget(self.editor)
+        self.splitter.setOpaqueResize(False)
+        self.splitter.setSizes([9999, 9999])
+
+
+        layout.addWidget(self.splitter)
+
+        self.setLayout(layout)
+
+
+
+class InsertModel(QWidget):
+    def __init__(self, parent: QWidget,
+                 size: Tuple[int, int] = (1000, 700)):
+        super().__init__(parent)
+
+        self.parent = parent
+        self.resize(*size)
+
+        self.dialog_ui()
+
+    def dialog_ui(self):
+        #Layout
+        layout = QVBoxLayout()
+
+        self.editor = QPlainTextEdit(self)
+        self.splitter = QSplitter(Qt.Orientation.Vertical,self)
+        self.from_ = QLineEdit(self)
+        self.to_ = QLineEdit(self)
+        button_box = self.create_buttonbox()
+
+        hsplitter = QSplitter(Qt.Orientation.Horizontal,self)
+        self.from_.setPlaceholderText("from")
+        self.to_.setPlaceholderText("to")
+        hsplitter.addWidget(self.from_)
+        hsplitter.addWidget(self.to_)
+        #Avoid to move the two texts
+        hsplitter.setCollapsible(0,False)
+        hsplitter.setCollapsible(1,False)
+
+        self.splitter.addWidget(hsplitter)
+        self.splitter.addWidget(self.editor)
+        self.splitter.setOpaqueResize(False)
+        self.splitter.setSizes([9999, 9999])
+
+
+        layout.addWidget(self.splitter)
+        layout.addWidget(button_box)
+
+        self.setLayout(layout)
+
+
+    def apply(self):
+        """ send the parameters to the graph and reload"""
+        if self.to_.text() == '' and self.from_.text() == '':
+            self.parent.graph.add_modele(self.editor.toPlainText(), -100, 100)
+        elif self.from_.text() == '':
+            self.parent.graph.add_modele(self.editor.toPlainText(), int(self.to_.text())-100, int(self.to_.text()))
+        elif self.to_.text() =='':
+            self.parent.graph.add_modele(self.editor.toPlainText(), int(self.from_.text()),int(self.from_.text())+100)
+        else:
+            self.parent.graph.add_modele(self.editor.toPlainText(),int(self.from_.text()),int(self.to_.text()))
+
+    def create_buttonbox(self):
+        """Returns a QDialogButtonBox with Ok and Cancel"""
+
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply)
+
+        button_box.button(
+            QDialogButtonBox.StandardButton.Apply).clicked.connect(self.apply)
+        return button_box
