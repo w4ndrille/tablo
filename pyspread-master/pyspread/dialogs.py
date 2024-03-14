@@ -1479,12 +1479,12 @@ class DeleteDialog(QDialog):
 
         cancel = QPushButton("Cancel")
         cancel.clicked.connect(self.reject)
-        button_box.addWidget(cancel)
+
 
         apply = QPushButton("Apply")
         apply.clicked.connect(self.apply)
         button_box.addWidget(apply)
-
+        button_box.addWidget(cancel)
         return button_box
 
     def _add_check_boxes(self,layout:QVBoxLayout,figs = None):
@@ -1528,6 +1528,104 @@ class DeleteDialog(QDialog):
                         if fig[0]==vbox.itemAt(i).widget().text():#verifying the name
                             figs.remove(fig)#removing him | if it was a identical curve it does matter
 
+
+class DataAddDialog(QDialog):
+    def __init__(self,parent:QWidget):
+        super().__init__(parent)
+        self.setWindowTitle('Ajouter une nouvelle courbe de données')
+        self.resize(400,300)
+        # les 3 paramètres de personnalisation
+        self.rgbColor = None
+        self.choiceDash = None
+        self.widthChoice = None
+
+        self.dialog_ui()
+
+
+    def dialog_ui(self):
+        # Layout
+        self.layout = QVBoxLayout()
+
+        #The decision button
+        buttonlayout = QHBoxLayout()
+        self.button_box = self.create_buttonbox()
+        buttonlayout.addLayout(self.button_box)
+        buttonlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+
+        ######################################################################################
+        #the configuration parameters
+        personalisationlayout = QVBoxLayout()
+        personalisationlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+        # color
+        self.colorButton = QPushButton("Pick a Color")
+        self.colorButton.setMinimumSize(150, 25)
+        self.colorButton.clicked.connect(self.colorChanged)
+        # colorLayout
+        colorLayout = QHBoxLayout()
+        colorLayout.addWidget(QLabel("Color : "))
+        colorLayout.addWidget(self.colorButton)
+        # dash
+        dashComboBox = QComboBox()
+        dashComboBox.setMinimumSize(150, 25)
+        dashComboBox.addItems(['solid', 'dot', 'dash', 'longdash', 'dashdot', 'longdashdot'])
+        dashComboBox.activated.connect(lambda: self.dashChanged(dashComboBox))
+        # dash layout
+        dashLayout = QHBoxLayout()
+        dashLayout.addWidget(QLabel("Type de lignes :"))
+        dashLayout.addWidget(dashComboBox)
+        # width
+        widthBox = QSpinBox()
+        widthBox.setMinimumSize(150, 25)
+        widthBox.setRange(1, 15)
+        widthBox.valueChanged.connect(lambda: self.widthChanged(widthBox))
+        # width Layout
+        widthLayout = QHBoxLayout()
+        widthLayout.addWidget(QLabel("Epaisseur de ligne: "))
+        widthLayout.addWidget(widthBox)
+        personalisationlayout.addLayout(colorLayout)
+        personalisationlayout.addLayout(dashLayout)
+        personalisationlayout.addLayout(widthLayout)
+        #########################################################################################
+
+        #need the row and col and it's all good
+
+        self.layout.addLayout(personalisationlayout)
+        self.layout.addLayout(buttonlayout)
+        self.setLayout(self.layout)
+        self.show()
+
+    #All 3 connexion for the 3 personnalisation parameters
+    def colorChanged(self):
+        colorDialog = QColorDialog(self)
+        colorPick = colorDialog.getColor()
+        #c'est la valeur de rgb color qu'il faudra renvoyer
+        self.rgbColor = "rgb("+str(colorPick.red())+","+ str(colorPick.green()) +","+ str(colorPick.blue())+')'
+        #setting up the background like the chosen color to let the user know which color he pickec
+        self.colorButton.setStyleSheet("background-color:"+self.rgbColor)
+    def dashChanged(self, qcombobox:QComboBox):
+        self.choiceDash = qcombobox.currentText()
+    def widthChanged(self,spinBox:QSpinBox):
+        self.widthChoice = spinBox.value()
+
+
+    def create_buttonbox(self):
+        """Returns a QDialogButtonBox with Ok and Cancel"""
+        button_box = QHBoxLayout()
+
+        acceptButton = QPushButton("Apply")
+        cancelButton = QPushButton("Cancel")
+
+        #Connect
+        acceptButton.clicked.connect(self.apply)
+        cancelButton.clicked.connect(self.reject)
+
+
+        button_box.addWidget(acceptButton)
+        button_box.addWidget(cancelButton)
+        return button_box
+
+    def apply(self):
+        print("e")
 
 
 class CsvParameterGroupBox(QGroupBox):

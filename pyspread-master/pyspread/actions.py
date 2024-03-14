@@ -1077,6 +1077,11 @@ class GraphWindowActions(AttrDict):
                                 icon=Icon.new,
                                 checkable=True,
                                 statustip='Update your curves if you added data')
+        self.plot_curves = Action(self.parent, "&Ajouter une courbe de données",
+                                  self.parent.dataAddDialog,
+                                  icon=Icon.new,
+                                  checkable=True,
+                                  statustip='Ajouter une nouvelle courbe en fonction des données entrées')
     def create_help_actions(self):
         """actions for Help menu"""
 

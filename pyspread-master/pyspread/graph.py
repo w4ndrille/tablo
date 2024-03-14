@@ -60,14 +60,14 @@ class Graph(QWebEngineView):
     def __init__(self, parent:QMainWindow, figs = None):
         super().__init__()
         self.parent = parent
-        self.axisLabels = []
+        self.axisLabels = {}
         # shorting the accesser to data
         self.model = self.parent.grid.model
         # the figure supporting our model
         self.fig = go.Figure()
 
         #a variable to remember the type of axis
-        self.typeAxis = 'lin'
+        self.typeAxis = 'linear'
         # array of values or maybe array for multiploting
         self.xValues = []
         self.yValues = []
@@ -88,7 +88,6 @@ class Graph(QWebEngineView):
             self.figs = []
 
         else:
-            print(figs)
             self.figs = figs
             self.rebuild()
 
@@ -170,7 +169,7 @@ class Graph(QWebEngineView):
 
 
 
-    def get_series(self, colIndexX :int = 0,colIndexY :int = 1):
+    def get_series(self, colIndexX :int = 0,colIndexY :int = 1,parameters = None):
         """
         Getting the curve from X col and Y col
         """
@@ -190,11 +189,11 @@ class Graph(QWebEngineView):
 
             inc += 1
 
-        self.axisLabels.append(self.model.index(0,colIndexX).data())
-        self.axisLabels.append(self.model.index(0,colIndexY).data())
+        self.axisLabels[colIndexX] = self.model.index(0,colIndexX).data()
+        self.axisLabels[colIndexY] = self.model.index(0,colIndexY).data()
 
         if len(self.xValues) > 0:
-            self.data_curve()
+            self.data_curve(parameters,colIndexX,colIndexY)
 
 
     def rebuild(self):
@@ -214,13 +213,15 @@ class Graph(QWebEngineView):
         self.reload()
 
 
-    def data_curve(self):
+    def data_curve(self,parameters,colIndexX,colIndexY):
         """
         Update the chart with all the series
         """
-
-        self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
-        self.data_curves.append([self.axisLabels[1] + " en fonction " + self.axisLabels[0],go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0])])
+        if parameters is None:
+            self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX]))
+            self.data_curves.append([self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0])])
+        else:
+            self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],ine=go.scatter.Line(color=parameters[0],dash=parameters[1],width=parameters[2])))
         #Pour ajouter les légends
         self.fig.update_layout(
             xaxis_title=self.axisLabels[0],
@@ -261,7 +262,7 @@ class Graph(QWebEngineView):
 
     def scaling(self):
 
-        if self.typeAxis =='lin':
+        if self.typeAxis =='linear':
             self.fig.update_layout(
                 xaxis= go.layout.XAxis(type='log'),
                 yaxis =  go.layout.YAxis(type='log')
@@ -273,7 +274,7 @@ class Graph(QWebEngineView):
                 xaxis = go.layout.XAxis(type='linear'),
                 yaxis = go.layout.YAxis(type='linear')
             )
-            self.typeAxis = 'lin'
+            self.typeAxis = 'linear'
 
         self.fig.update_yaxes(exponentformat='E')
         self.fig.update_xaxes(exponentformat='E')
