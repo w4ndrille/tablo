@@ -338,6 +338,8 @@ class Graph(QWebEngineView):
                 # getting the optimal parameters and the covariance matrix
                  if fct =="logarithme" and min(self.xValues) <= 0 :
                     continue
+                 if fct =="exponentiale" and max(self.xValues) > 50 :
+                     continue
                  try:
                     popt, pcov = curve_fit(self.functionDict[fct], self.xValues, self.yValues)
                  except RuntimeError:
