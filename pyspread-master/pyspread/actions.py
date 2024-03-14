@@ -1044,6 +1044,7 @@ class GraphWindowActions(AttrDict):
         self.create_modelisation_actions()
         self.create_help_actions()
         self.modeles_menu_actions()
+        self.figure_settings_actions()
 
         #Add here every actions bars (function) you want to add to the projet
     def modeles_menu_actions(self):
@@ -1057,6 +1058,12 @@ class GraphWindowActions(AttrDict):
                                     icon=Icon.auto_evaluate,
                                     checkable=True,
                                     statustip="Trouve la modélisation la plus adéquate")
+    def figure_settings_actions(self):
+        self.loglin = Action(self.parent, "&Changement d'échelle",
+                             self.parent.graph.scaling,
+                             icon=Icon.new,
+                             checkable=True,
+                             statustip="l'échelle en log ou lin")
 
     def create_modelisation_actions(self):
         self.update = Action(self.parent, "&Update Modelisation",

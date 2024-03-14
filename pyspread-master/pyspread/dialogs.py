@@ -1346,11 +1346,7 @@ class CreateModel(QDialog):
 
         from_ = vbox.itemAt(1).itemAt(1).widget().text()
         to_ = vbox.itemAt(1).itemAt(3).widget().text()
-        try:
-            to_,from_ = float(to_),float(from_)
-        except ValueError:
-            QErrorMessage(self).showMessage("Erreur : entrée non numérique")
-            return
+
 
         if to_ == '' and from_ == '':
             from_,to_ = -100,100
@@ -1361,6 +1357,12 @@ class CreateModel(QDialog):
         elif to_ == '':
             from_ = float(from_)
             to_ = from_ + 100
+
+        try:
+            to_,from_ = float(to_),float(from_)
+        except ValueError:
+            QErrorMessage(self).showMessage("Erreur : entrée non numérique")
+            return
 
 
 

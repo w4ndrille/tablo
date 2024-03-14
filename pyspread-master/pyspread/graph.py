@@ -66,6 +66,8 @@ class Graph(QWebEngineView):
         # the figure supporting our model
         self.fig = go.Figure()
 
+        #a variable to remember the type of axis
+        self.typeAxis = 'lin'
         # array of values or maybe array for multiploting
         self.xValues = []
         self.yValues = []
@@ -188,7 +190,7 @@ class Graph(QWebEngineView):
 
 
     def rebuild(self):
-        self.chart = "<html><body>"
+
         self.fig = go.Figure()#redefining the figure
         self.fig.update_layout(
             xaxis_title=self.axisLabels[0],
@@ -201,16 +203,14 @@ class Graph(QWebEngineView):
 
             self.fig.add_traces(self.figs[i])
 
-        self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
-        self.chart += '</body></html>'
-        self.setHtml(self.chart)
+        self.reload()
 
 
     def update_chart(self):
         """
         Update the chart with all the series
         """
-        self.chart = "<html><body>"
+
         self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
         self.figs.append(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
         #Pour ajouter les légends
@@ -218,19 +218,15 @@ class Graph(QWebEngineView):
             xaxis_title=self.axisLabels[0],
             yaxis_title=self.axisLabels[1],
             legend_title="Légende",
-
         )
-
         #permet d'avoir l'écriture scientifique / a enlever si on veut l'écriture simple en mettant ="none"
         self.fig.update_yaxes(exponentformat='E')
 
-        self.chart += plotly.offline.plot(self.fig, output_type='div',include_plotlyjs='cdn')
-        self.chart += '</body></html>'
-        self.setHtml(self.chart)
+        self.reload()
 
 
     def add_manual_modele(self,equation:str ,from_:int,to_:int):
-        self.chart = "<html><body>"
+
 
         #create a np array from -100 to 100 and create the y array associated
         x = np.arange(from_,to_,0.1)
@@ -241,20 +237,42 @@ class Graph(QWebEngineView):
         #adding the trace in to the figs
         self.figs.append(go.Scatter(x=x,y=y,name=equation))
 
-        self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
-        self.chart += '</body></html>'
-        self.setHtml(self.chart)
+        self.reload()
 
     def add_common_modele(self,name:str , parameters, perso_choices,from_,to_):
-        self.chart = "<html><body>"
+
         x = np.arange(from_,to_,0.1)
         y = self.functionDict[name.lower()](x,*parameters)
+
         for i in parameters:
             name += " " + str(i) +","
         trace = go.Scatter(x=x,y=y,name=name,line=go.scatter.Line(color=perso_choices[0],dash=perso_choices[1],width=perso_choices[2]))
         self.common_curves.append(trace)
         self.fig.add_traces(trace)
-        self.chart += plotly.offline.plot(self.fig,output_type='div', include_plotlyjs='cdn')
+        self.reload()
+
+    def scaling(self):
+
+        if self.typeAxis =='lin':
+            self.fig.update_layout(
+                xaxis= go.layout.XAxis(type='log'),
+                yaxis =  go.layout.YAxis(type='log')
+            )
+            self.typeAxis = 'log'
+
+        elif self.typeAxis =='log':
+            self.fig.update_layout(
+                xaxis = go.layout.XAxis(type='linear'),
+                yaxis = go.layout.YAxis(type='linear')
+            )
+            self.typeAxis = 'lin'
+
+        self.reload()
+
+    def reload(self):
+
+        self.chart = "<html><body>"
+        self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
         self.chart += "</body></html>"
         self.setHtml(self.chart)
 
@@ -295,17 +313,13 @@ class Graph(QWebEngineView):
             self.fig.add_traces(self.modelisationCurves[0])
 
             #adding the modele
-
-            self.chart = "<html><body>"
-            self.chart += plotly.offline.plot(self.fig,output_type='div', include_plotlyjs='cdn')
-            self.chart += "</body></html>"
-            self.setHtml(self.chart)
-
+            self.reload()
             #sending the name and the array of parameters to the parameters widget
             self.parent.showParameters.setParameters(name.lower(),popt,sqrt(diag(pcov)))
             self.parent.showParameters.show()
 
             return True
+
 
 
     def auto_evaluate(self):

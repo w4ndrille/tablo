@@ -485,3 +485,4 @@ class GraphMainToolBar(ToolBarBase):
     def _create_toolbar(self, actions: GraphWindowActions):
         self.addAction(actions.update)
         self.addAction(actions.auto_evaluate)
+        self.addAction(actions.loglin)
