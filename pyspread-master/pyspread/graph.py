@@ -72,21 +72,26 @@ class Graph(QWebEngineView):
         self.xValues = []
         self.yValues = []
 
-        self.get_series()
 
         # creating another array to stock the modelisation
         self.modelisationCurves = []
         #must contains all the curves which are build from the creation modele | this array will be useful when we will want to delete certains curves
         self.common_curves = []
+        # data curves
+        self.data_curves = []
+        #bornes lines
+        self.bornes = []
 
+        self.get_series()
         # getting all the figures on a reload
         if figs is None:
             self.figs = []
 
         else:
+            print(figs)
             self.figs = figs
             self.rebuild()
-        self.update_chart()
+
 
 
         self.allParameters = {
@@ -188,6 +193,9 @@ class Graph(QWebEngineView):
         self.axisLabels.append(self.model.index(0,colIndexX).data())
         self.axisLabels.append(self.model.index(0,colIndexY).data())
 
+        if len(self.xValues) > 0:
+            self.data_curve()
+
 
     def rebuild(self):
 
@@ -199,20 +207,20 @@ class Graph(QWebEngineView):
 
         )
         self.fig.update_yaxes(exponentformat='E')
-        for i in range(len(self.figs)):
 
-            self.fig.add_traces(self.figs[i])
+        for i in range(len(self.figs)):
+            self.fig.add_traces(self.figs[i][1])
 
         self.reload()
 
 
-    def update_chart(self):
+    def data_curve(self):
         """
         Update the chart with all the series
         """
 
         self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
-        self.figs.append(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0]))
+        self.data_curves.append([self.axisLabels[1] + " en fonction " + self.axisLabels[0],go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0])])
         #Pour ajouter les légends
         self.fig.update_layout(
             xaxis_title=self.axisLabels[0],
@@ -235,7 +243,7 @@ class Graph(QWebEngineView):
 
         self.fig.add_traces(go.Scatter(x=x,y=y,name=equation))
         #adding the trace in to the figs
-        self.figs.append(go.Scatter(x=x,y=y,name=equation))
+        self.figs.append([equation,go.Scatter(x=x,y=y,name=equation)])
 
         self.reload()
 
@@ -247,7 +255,7 @@ class Graph(QWebEngineView):
         for i in parameters:
             name += " " + str(i) +","
         trace = go.Scatter(x=x,y=y,name=name,line=go.scatter.Line(color=perso_choices[0],dash=perso_choices[1],width=perso_choices[2]))
-        self.common_curves.append(trace)
+        self.common_curves.append([name,trace])
         self.fig.add_traces(trace)
         self.reload()
 
@@ -278,6 +286,31 @@ class Graph(QWebEngineView):
         self.chart += "</body></html>"
         self.setHtml(self.chart)
 
+    def reload_on_deletion(self):
+        self.fig = go.Figure()  # redefining the figure
+        self.fig.update_layout(
+            xaxis_title=self.axisLabels[0],
+            yaxis_title=self.axisLabels[1],
+            legend_title="Légende",
+
+        )
+        self.fig.update_yaxes(exponentformat='E')
+
+        #Adding all the curves except the ones deleted
+        for i in range(len(self.figs)):
+            self.fig.add_traces(self.figs[i][1])
+
+        for i in range(len(self.modelisationCurves)):
+            self.fig.add_traces(self.modelisationCurves[i][1])
+
+        for i in range(len(self.data_curves)):
+            self.fig.add_traces(self.data_curves[i][1])
+
+        for i in range(len(self.bornes)):
+            self.fig.add_traces(self.bornes[i][1])
+
+        self.reload()
+
     def evaluate(self, name:str):
 
 
@@ -306,13 +339,14 @@ class Graph(QWebEngineView):
             y = self.functionDict[name.lower()](x,*popt)
 
             if len(self.modelisationCurves) == 1 : # si il y a déjà une modélisation, on la remplace, on rebuild et paf
-                self.modelisationCurves[0] = go.Scatter(x=x,y=y,name="Estimation de la courbe des données")
+                self.modelisationCurves[0][1] = go.Scatter(x=x,y=y,name="Estimation de la courbe des données")
                 self.rebuild()
             else:
-                self.modelisationCurves.append(go.Scatter(x=x,y=y,name="Estimation de la courbe des données"))
+                self.modelisationCurves.append(["Modélisation",go.Scatter(x=x,y=y,name="Estimation de la courbe des données")])
 
 
-            self.fig.add_traces(self.modelisationCurves[0])
+            self.fig.add_traces(self.modelisationCurves[0][1])
+
 
             #adding the modele
             self.reload()

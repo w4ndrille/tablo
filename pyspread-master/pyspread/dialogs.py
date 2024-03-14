@@ -1408,6 +1408,125 @@ class CreateModel(QDialog):
         self.hide()
         self.__init__(self.parent)
 
+class DeleteDialog(QDialog):
+    def __init__(self,parent:QWidget):
+        super().__init__(parent)
+        self.parent = parent
+        self.resize(300,500)
+        self.setWindowTitle("Enlever des courbes")
+        self.show()
+
+        self._layout()
+
+    def _layout(self):
+        self.main_layout = QVBoxLayout()
+        manually_figs = self.parent.graph.figs
+        modelisation_figs = self.parent.graph.modelisationCurves
+        data_figs = self.parent.graph.data_curves
+        bornes = self.parent.graph.bornes
+
+        #A Layout for the manually added modele |
+        self.manually_layout = QVBoxLayout()
+        self.manually_layout.addWidget(self.header("Courbes manuelles"))
+        if not manually_figs:
+            self._add_check_boxes(self.manually_layout)
+        else:
+            self._add_check_boxes(self.manually_layout, manually_figs)
+
+        #a layout for the modelisation
+        self.modelisation_layout = QVBoxLayout()
+        self.modelisation_layout.addWidget(self.header("Courbes de modélisations"))
+        if not modelisation_figs:
+            self._add_check_boxes(self.modelisation_layout)
+        else:
+            self._add_check_boxes(self.modelisation_layout, modelisation_figs)
+
+        # a layout for the data curves
+        self.data_layout = QVBoxLayout()
+        self.data_layout.addWidget(self.header("Courbes de données"))
+        if not data_figs:
+            self._add_check_boxes(self.data_layout)
+        else:
+            self._add_check_boxes(self.data_layout, data_figs)
+
+        #Layout for the bornes |
+        self.bornes_layout = QVBoxLayout()
+        self.bornes_layout.addWidget(self.header("Bornes"))
+        if not bornes:
+            self._add_check_boxes(self.bornes_layout)
+        else:
+            self._add_check_boxes(self.bornes_layout, bornes)
+
+
+
+
+        self.main_layout.addLayout(self.manually_layout)
+        self.main_layout.addLayout(self.modelisation_layout)
+        self.main_layout.addLayout(self.data_layout)
+        self.main_layout.addLayout(self.bornes_layout)
+        self.main_layout.addLayout(self.create_buttons_box())
+        self.setLayout(self.main_layout)
+
+    def header(self,header_name:str):
+        label = QLabel("<h2>" + header_name + "</h2>")
+        label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        label.setContentsMargins(10,0,0,0)
+        return label
+
+    def create_buttons_box(self):
+        button_box = QHBoxLayout()
+        button_box.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+
+        cancel = QPushButton("Cancel")
+        cancel.clicked.connect(self.reject)
+        button_box.addWidget(cancel)
+
+        apply = QPushButton("Apply")
+        apply.clicked.connect(self.apply)
+        button_box.addWidget(apply)
+
+        return button_box
+
+    def _add_check_boxes(self,layout:QVBoxLayout,figs = None):
+        if figs is None:
+            label = QLabel("Aucun tracé à enlever")
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(label)
+        else:
+            vbox = QVBoxLayout()
+            vbox.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+            for fig in figs:
+                #only getting the first element of the array fig = the name of the function
+                check = QCheckBox(fig[0])
+                vbox.addWidget(check)
+
+            layout.addLayout(vbox)
+
+
+
+    def apply(self):
+        self.delete_figs(self.manually_layout,self.parent.graph.figs)
+        self.delete_figs(self.data_layout,self.parent.graph.data_curves)
+        self.delete_figs(self.modelisation_layout,self.parent.graph.modelisationCurves)
+        if not len(self.parent.graph.modelisationCurves) :
+            self.parent.showParameters.hide()
+
+        self.delete_figs(self.bornes_layout,self.parent.graph.bornes)
+
+        self.parent.graph.reload_on_deletion()
+        self.close()
+
+
+    def delete_figs(self,layout:QVBoxLayout,figs):
+        vbox = layout.itemAt(1)
+        if type(vbox.widget()) is QLabel: #avoiding the case where there is nothing to delete | it also means that the array is empty
+            return
+        else:
+            for i in range(vbox.count()):
+                if vbox.itemAt(i).widget().checkState()== Qt.CheckState.Checked: #Or Qt.CheckState.Checked
+                    for fig in figs:#from all the array figures contains in the array we are looking for the one with the name of the checked box
+                        if fig[0]==vbox.itemAt(i).widget().text():#verifying the name
+                            figs.remove(fig)#removing him | if it was a identical curve it does matter
 
 
 

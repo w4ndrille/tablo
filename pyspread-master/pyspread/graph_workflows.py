@@ -15,6 +15,9 @@ class GraphWorkflows:
     def new_modele(self):
        self.graph_window.modeleDialog()
 
+    def delete_dialog(self):
+        self.graph_window.deleteDialog()
+
     def auto_evaluate(self):
         #Handle error du to no data
         if not self.graph_window.graph.auto_evaluate():

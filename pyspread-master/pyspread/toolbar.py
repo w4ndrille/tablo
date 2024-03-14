@@ -486,3 +486,4 @@ class GraphMainToolBar(ToolBarBase):
         self.addAction(actions.update)
         self.addAction(actions.auto_evaluate)
         self.addAction(actions.loglin)
+        self.addAction(actions.delete_curves)

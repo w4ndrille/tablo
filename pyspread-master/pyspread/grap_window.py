@@ -81,7 +81,7 @@ except ImportError:
     from graph_workflows import GraphWorkflows
     from widgets import Widgets, ShowParametersWidget, InsertModel
     from dialogs import (ApproveWarningDialog, PreferencesDialog, ManualDialog,
-                         TutorialDialog, PrintAreaDialog, PrintPreviewDialog,CreateModel)
+                         TutorialDialog, PrintAreaDialog, PrintPreviewDialog,CreateModel, DeleteDialog)
     from installer import DependenciesDialog
     from interfaces.pys import qt62qt5_fontweights
     from panels import MacroPanel
@@ -194,8 +194,9 @@ class GraphWindow(QMainWindow):
 
 
     def modeleDialog(self):
-        self.modele_dialog = CreateModel(self)
-
+        modele_dialog = CreateModel(self)
+    def deleteDialog(self):
+        delete_dialog = DeleteDialog(self)
 
 
 
@@ -210,8 +211,6 @@ class GraphWindow(QMainWindow):
         :param event: Any QEvent
 
         """
-
-
         return super().eventFilter(source, event)
 
     def _init_toolbars(self):
@@ -586,5 +585,5 @@ class GraphWindow(QMainWindow):
     def update(self):
 
         self.close()
-        self.parent.workflows.new_window(self.graph.figs[1:],True)
+        self.parent.workflows.new_window(self.graph.figs,True)
         self = None

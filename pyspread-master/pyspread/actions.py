@@ -58,7 +58,7 @@ except ImportError:
 class Action(QAction):
     """A convenience class for creating a `QAction`
 
-    .. Note: Parameter order has changed comparing with QAction
+     Note: Parameter order has changed comparing with QAction
 
     """
 
@@ -1064,6 +1064,12 @@ class GraphWindowActions(AttrDict):
                              icon=Icon.scaling,
                              checkable=True,
                              statustip="l'échelle en log ou lin")
+
+        self.delete_curves = Action(self.parent, "&Delete curves",
+                                  self.parent.workflows.delete_dialog,
+                                  icon=Icon.delete_curve,
+                                  checkable=True,
+                                  statustip="Permet d'enlever l'une des courbes manuellement")
 
     def create_modelisation_actions(self):
         self.update = Action(self.parent, "&Update Modelisation",
