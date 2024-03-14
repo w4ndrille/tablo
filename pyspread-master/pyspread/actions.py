@@ -1061,7 +1061,7 @@ class GraphWindowActions(AttrDict):
     def figure_settings_actions(self):
         self.loglin = Action(self.parent, "&Changement d'échelle",
                              self.parent.graph.scaling,
-                             icon=Icon.new,
+                             icon=Icon.scaling,
                              checkable=True,
                              statustip="l'échelle en log ou lin")
 

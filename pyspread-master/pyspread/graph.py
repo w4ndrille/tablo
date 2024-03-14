@@ -267,6 +267,8 @@ class Graph(QWebEngineView):
             )
             self.typeAxis = 'lin'
 
+        self.fig.update_yaxes(exponentformat='E')
+        self.fig.update_xaxes(exponentformat='E')
         self.reload()
 
     def reload(self):

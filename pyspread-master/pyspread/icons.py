@@ -217,6 +217,9 @@ class IconPath:
     #Auto evaluate
     auto_evaluate = ACTION_PATH / 'auto_evaluate.svg'
 
+    #Scaling settings
+    scaling = ACTION_PATH / 'scaling.svg'
+
 class IconConverter(type):
     """Meta class that provides QIcons for IconPaths icons"""
 
