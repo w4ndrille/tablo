@@ -1532,6 +1532,7 @@ class DeleteDialog(QDialog):
 class DataAddDialog(QDialog):
     def __init__(self,parent:QWidget):
         super().__init__(parent)
+        self.parent = parent
         self.setWindowTitle('Ajouter une nouvelle courbe de données')
         self.resize(400,300)
         # les 3 paramètres de personnalisation
@@ -1588,7 +1589,19 @@ class DataAddDialog(QDialog):
         #########################################################################################
 
         #need the row and col and it's all good
+        row_col_layout = QHBoxLayout()
+        row_col_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        colX = QSpinBox()
+        colY = QSpinBox()
+        colX.setMinimum(0)
+        colY.setMinimum(0)
 
+        row_col_layout.addWidget(QLabel("x : "))
+        row_col_layout.addWidget(colX)
+        row_col_layout.addWidget(QLabel("y : "))
+        row_col_layout.addWidget(colY)
+
+        self.layout.addLayout(row_col_layout)
         self.layout.addLayout(personalisationlayout)
         self.layout.addLayout(buttonlayout)
         self.setLayout(self.layout)
@@ -1625,7 +1638,28 @@ class DataAddDialog(QDialog):
         return button_box
 
     def apply(self):
-        print("e")
+        """Send all the parameters to plot the corresponding curve"""
+        # handling the case the user chose nothing
+        if self.rgbColor is None:
+            rgbColor = "rgb(255,0,0)"
+        else:
+            rgbColor = self.rgbColor
+        if self.choiceDash is None:
+            choiceDash = "solid"
+        else:
+            choiceDash = self.choiceDash
+        if self.widthChoice is None:
+            widthChoice = 1
+        else:
+            widthChoice = self.widthChoice
+
+
+        x = int(self.layout.itemAt(0).itemAt(1).widget().text())
+        y = int(self.layout.itemAt(0).itemAt(3).widget().text())
+
+        self.parent.graph.get_series(x,y,[rgbColor,choiceDash,widthChoice])
+        self.close()
+
 
 
 class CsvParameterGroupBox(QGroupBox):

@@ -221,7 +221,7 @@ class Graph(QWebEngineView):
             self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX]))
             self.data_curves.append([self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0])])
         else:
-            self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],ine=go.scatter.Line(color=parameters[0],dash=parameters[1],width=parameters[2])))
+            self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],line=go.scatter.Line(color=parameters[0],dash=parameters[1],width=parameters[2])))
         #Pour ajouter les légends
         self.fig.update_layout(
             xaxis_title=self.axisLabels[0],
