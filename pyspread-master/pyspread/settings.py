@@ -48,6 +48,7 @@ MANUAL_PATH = DOC_PATH / "manual"
 MPL_TEMPLATE_PATH = PYSPREAD_PATH / 'pyspread/share/templates/matplotlib'
 RPY2_TEMPLATE_PATH = PYSPREAD_PATH / 'pyspread/share/templates/rpy2'
 PLOT9_TEMPLATE_PATH = PYSPREAD_PATH / 'pyspread/share/templates/plotnine'
+
 ICON_PATH = PYSPREAD_PATH / 'pyspread/share/icons'
 ACTION_PATH = ICON_PATH / 'actions'
 STATUS_PATH = ICON_PATH / 'status'

@@ -1046,6 +1046,7 @@ class GraphWindowActions(AttrDict):
         self.modeles_menu_actions()
         self.figure_settings_actions()
 
+
         #Add here every actions bars (function) you want to add to the projet
     def modeles_menu_actions(self):
         self.new_modele = Action(self.parent, "&Nouveau Modèle",
@@ -1079,7 +1080,7 @@ class GraphWindowActions(AttrDict):
                                 statustip='Update your curves if you added data')
         self.plot_curves = Action(self.parent, "&Ajouter une courbe de données",
                                   self.parent.dataAddDialog,
-                                  icon=Icon.new,
+                                  icon=Icon.curve,
                                   checkable=True,
                                   statustip='Ajouter une nouvelle courbe en fonction des données entrées')
     def create_help_actions(self):
@@ -1106,4 +1107,5 @@ class GraphWindowActions(AttrDict):
                             icon=Icon.pyspread,
                             statustip='About pyspread',
                             role=QAction.MenuRole.AboutRole)
+
 

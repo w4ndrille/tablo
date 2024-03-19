@@ -5,23 +5,23 @@ from PyQt6.QtWidgets import QErrorMessage
 
 class GraphWorkflows:
 
-    cell2dialog = {}
+
     def __init__(self, graph_window):
-        self.graph_window = graph_window
+        self.parent = graph_window
 
     def update(self):
-        self.graph_window.update()
+        self.parent.update()
 
     def new_modele(self):
-       self.graph_window.modeleDialog()
+       self.parent.modeleDialog()
 
     def delete_dialog(self):
-        self.graph_window.deleteDialog()
+        self.parent.deleteDialog()
 
     def auto_evaluate(self):
         #Handle error du to no data
-        if not self.graph_window.graph.auto_evaluate():
-            QErrorMessage(self.graph_window.graph).showMessage("Erreur d'évaluation : Aucune donnée à évaluer")
+        if not self.parent.graph.auto_evaluate():
+            QErrorMessage(self.parent.graph).showMessage("Erreur d'évaluation : Aucune donnée à évaluer")
 
 
 ###FONCTION EXEMPLE
