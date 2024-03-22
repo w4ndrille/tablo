@@ -16,8 +16,6 @@ from PyQt6.QtGui \
             QTextOption, QAbstractTextDocumentLayout, QTextDocument,
             QWheelEvent, QContextMenuEvent, QTextCursor)
 
-from PyQt6.QtCharts import QChart, QChartView, QLineSeries, QBarSet, QBarSeries, QPieSeries, QScatterSeries,QValueAxis
-
 from PyQt6.QtCore \
     import (Qt, QAbstractTableModel, QModelIndex, QVariant, QEvent, QSize,
             QRect, QRectF, QItemSelectionModel, QObject, QAbstractItemModel,
