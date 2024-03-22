@@ -26,3 +26,11 @@ public/
 # coverage
 *.coverage
 htmlcov
+
+
+# Rajouter par PyCharm
+.idea
+
+# Rajouter par Mac
+.DS_Store
+
