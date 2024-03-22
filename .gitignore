@@ -28,9 +28,9 @@ public/
 htmlcov
 
 
-# Rajouter par PyCharm
+# Fichier ajouter par PyCharm dont on a pas forcément besoin
 .idea
 
-# Rajouter par Mac
+# Fichier ajouter par Mac dont on a pas forcément besoin
 .DS_Store
 
