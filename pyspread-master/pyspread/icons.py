@@ -214,6 +214,7 @@ class IconPath:
     gaussian = MODELE_PATH /'gaussian.svg'
     lorentz = MODELE_PATH /'lorentz.svg'
 
+    curve = ACTION_PATH /'curves.svg'
     #Auto evaluate
     auto_evaluate = ACTION_PATH / 'auto_evaluate.svg'
 

@@ -73,8 +73,6 @@ class Graph(QWebEngineView):
 
         # creating another array to stock the modelisation
         self.modelisationCurves = []
-        #must contains all the curves which are build from the creation modele | this array will be useful when we will want to delete certains curves
-        self.common_curves = []
         # data curves
         self.data_curves = []
         #bornes lines
@@ -85,9 +83,11 @@ class Graph(QWebEngineView):
         if figs is None:
             self.figs = []
 
+
         else:
             self.figs = figs
             self.rebuild()
+
 
 
 
@@ -167,7 +167,7 @@ class Graph(QWebEngineView):
 
 
 
-    def get_series(self, colIndexX :int = 0,colIndexY :int = 1,parameters = None):
+    def get_series(self, colIndexX :int = 0,colIndexY :int =1,parameters = None):
         """
         Getting the curve from X col and Y col
         """
@@ -254,7 +254,7 @@ class Graph(QWebEngineView):
         for i in parameters:
             name += " " + str(i) +","
         trace = go.Scatter(x=x,y=y,name=name,line=go.scatter.Line(color=perso_choices[0],dash=perso_choices[1],width=perso_choices[2]))
-        self.common_curves.append([name,trace])
+        self.figs.append([name,trace])
         self.fig.add_traces(trace)
         self.reload()
 
