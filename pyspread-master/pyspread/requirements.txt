@@ -3,6 +3,7 @@ PyQt6 (>=6.4)
 numpy (>=1.1)
 setuptools (>=40.0)
 markdown2 (>= 2.3)
+PyQt6-WebEngine (>=6.4)
 
 # Optional
 matplotlib (>=1.1.1)
@@ -13,4 +14,3 @@ py-moneyed (>=2.0)
 rpy2 (>=3.4)
 plotnine (>=0.8)
 dash
-PyQt6-WebEngine
