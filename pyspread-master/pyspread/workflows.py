@@ -92,7 +92,7 @@ except ImportError:
     from model.model import CellAttribute
 
 #Add
-from grap_window import GraphWindow
+from graph_window import GraphWindow
 try:
     from pyspread.cli import PyspreadArgumentParser
 except ImportError:
