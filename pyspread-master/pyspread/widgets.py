@@ -71,6 +71,12 @@ except ImportError:
     from lib.csv import typehandlers, currencies
 import numpy as np
 
+try:
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+except ImportError:
+    Figure = None
+
 class MultiStateBitmapButton(QToolButton):
     """QToolButton that cycles through arbitrary states
 
@@ -864,6 +870,38 @@ class ShowParametersWidget(QWidget):
 
         self.setLayout(self.main_layout)
 
+    def equationFrame(self,equation,name):
+        l = QVBoxLayout()
+        figure = Figure()
+        canvas = FigureCanvas(figure)
+        l.addWidget(canvas)
+
+
+        needFocusEquations = ["gauss", "lorentz", "michaelis", "sigmoïde"]
+        if name in needFocusEquations:
+            focusParam = 3
+            y = 0.8
+        elif name != "polynomiale":
+            focusParam = 1.5
+            y = 0.5
+        else:
+            focusParam = 1.3
+            y = 0.5
+        figure.clear()
+
+        text = figure.suptitle(
+            equation,
+            size=QFont().pointSize() * focusParam,
+            y=y,
+            horizontalalignment='center',
+            verticalalignment='top', )
+        canvas.draw()
+        (x0, y0), (x1, y1) = text.get_window_extent().get_points()
+        w = x1 - x0
+        h = y1 - y0
+
+        figure.set_size_inches(w / 150, h / 100)
+        return canvas
     def setParameters(self, name:str,popt,pvar):
         self.reset()
         """
@@ -876,8 +914,8 @@ class ShowParametersWidget(QWidget):
         #name and equation
         nameTitle = QLabel("<h2> " +self.allParameters[name][0][0]+ "</h2>")
         nameTitle.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        equation = QLabel(self.allParameters[name][0][1])
-        equation.setAlignment(Qt.AlignmentFlag.AlignHCenter )
+        equation = self.equationFrame(self.allParameters[name][0][1],name.lower())
+        #equation.setAlignment(Qt.AlignmentFlag.AlignHCenter )
         vbox.addWidget(nameTitle)
         vbox.addWidget(equation)
 
@@ -968,3 +1006,5 @@ class InsertModel(QWidget):
         button_box.button(
             QDialogButtonBox.StandardButton.Apply).clicked.connect(self.apply)
         return button_box
+
+
