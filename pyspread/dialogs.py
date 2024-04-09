@@ -1395,8 +1395,8 @@ class CreateModel(QDialog):
             QErrorMessage(self).showMessage("Erreur : entrée non numérique")
             return
 
-
-
+        print(name)
+        print(*np.array(parameters))
         self.parent.graph.add_common_modele(name,np.array(parameters),[rgbColor,choiceDash,widthChoice],from_,to_)
 
         self.close()

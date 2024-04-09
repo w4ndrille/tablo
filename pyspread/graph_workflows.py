@@ -10,7 +10,9 @@ class GraphWorkflows:
         self.parent = graph_window
 
     def update(self):
-        self.parent.update()
+        self.parent.parent.workflows.new_window(self.parent.graph.figs,True)
+        self.parent.close()
+        self.parent = None
 
     def new_modele(self):
        self.parent.modeleDialog()

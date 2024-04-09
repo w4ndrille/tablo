@@ -585,8 +585,3 @@ class GraphWindow(QMainWindow):
         self.main_window_toolbar_actions.merge_cells.setChecked(
             attributes.merge_area is not None)
 
-    def update(self):
-
-        self.close()
-        self.parent.workflows.new_window(self.graph.figs,True)
-        self = None
