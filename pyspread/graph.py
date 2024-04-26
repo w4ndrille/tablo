@@ -235,7 +235,7 @@ class Graph(QWebEngineView):
             self.bornes.append([axis + " = " + str(where),axis,where,perso_choices])
 
         elif axis =="y":
-            self.fig.add_hline(x=where,line_width=perso_choices[2], line_dash=perso_choices[1], line_color=perso_choices[0])
+            self.fig.add_hline(y=where,line_width=perso_choices[2], line_dash=perso_choices[1], line_color=perso_choices[0])
             self.bornes.append([axis + " = " + str(where),axis,where,perso_choices])
         self.reload()
 
