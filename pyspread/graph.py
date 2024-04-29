@@ -229,6 +229,17 @@ class Graph(QWebEngineView):
         self.fig.add_traces(trace)
         self.reload()
 
+    def add_bornes(self,axis:str,where:int,perso_choices):
+        if axis =="x":
+            self.fig.add_vline(x=where,line_width=perso_choices[2], line_dash=perso_choices[1], line_color=perso_choices[0])
+            self.bornes.append([axis + " = " + str(where),axis,where,perso_choices])
+
+        elif axis =="y":
+            self.fig.add_hline(y=where,line_width=perso_choices[2], line_dash=perso_choices[1], line_color=perso_choices[0])
+            self.bornes.append([axis + " = " + str(where),axis,where,perso_choices])
+        self.reload()
+
+
     def scaling(self):
 
         if self.typeAxis =='linear':
@@ -248,6 +259,17 @@ class Graph(QWebEngineView):
         self.fig.update_yaxes(exponentformat='E')
         self.fig.update_xaxes(exponentformat='E')
         self.reload()
+
+    def scaling_disjoint(self,on_xaxis,on_yaxis):
+        self.fig.update_layout(
+            xaxis=go.layout.XAxis(type=on_xaxis),
+            yaxis=go.layout.YAxis(type=on_yaxis)
+        )
+        self.typeAxis = on_xaxis #putting one or the other do not matter, it's just to prevent the use of the normal scaling button
+        self.fig.update_yaxes(exponentformat='E')
+        self.fig.update_xaxes(exponentformat='E')
+        self.reload()
+
 
     def reload(self):
 
@@ -276,8 +298,12 @@ class Graph(QWebEngineView):
         for i in range(len(self.data_curves)):
             self.fig.add_traces(self.data_curves[i][1])
 
-        for i in range(len(self.ybornes)):
-            self.fig.h_line(self.bornes[i][1])
+        for i in range(len(self.bornes)):
+            if self.bornes[i][1] == "x":
+                self.fig.add_hline(x=self.bornes[i][2],line_width=self.bornes[i][3][2], line_dash=self.bornes[i][3][1], line_color=self.bornes[i][3][0])
+            else:
+                self.fig.add_vline(x=self.bornes[i][2],line_width=self.bornes[i][3][2], line_dash=self.bornes[i][3][1], line_color=self.bornes[i][3][0])
+
 
         self.reload()
 
