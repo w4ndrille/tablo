@@ -111,6 +111,7 @@ class GraphMenuBar(QMenuBar):
         self.addMenu(self.modeles_menu)
         self.addMenu(self.help_menu)
 
+
 #WARNING This is the graph menu inside the Main Window
 class GraphMenu(QMenu):
     def __init__(self, parent: QWidget, actions : GraphWindowActions):
@@ -125,6 +126,8 @@ class ModeleMenu(QMenu):
         super().__init__('&Modèles',parent)
         self.parent = parent
         self.addAction(actions.new_modele)
+        self.addAction(actions.loglinscale)
+        self.addAction(actions.add_bornes)
 
 
 

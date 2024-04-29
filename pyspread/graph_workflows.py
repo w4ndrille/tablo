@@ -10,13 +10,20 @@ class GraphWorkflows:
         self.parent = graph_window
 
     def update(self):
-        self.parent.update()
+        self.parent.parent.workflows.new_window(self.parent.graph.figs,True)
+        self.parent.close()
+        self.parent = None
 
     def new_modele(self):
        self.parent.modeleDialog()
 
+    def loglinscale_dialog(self):
+        self.parent.loglinscaleDialog()
     def delete_dialog(self):
         self.parent.deleteDialog()
+
+    def addBornes(self):
+        self.parent.addBornesDialog()
 
     def auto_evaluate(self):
         #Handle error du to no data
@@ -24,4 +31,3 @@ class GraphWorkflows:
             QErrorMessage(self.parent.graph).showMessage("Erreur d'évaluation : Aucune donnée à évaluer")
 
 
-###FONCTION EXEMPLE

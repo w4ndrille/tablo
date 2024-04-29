@@ -1054,11 +1054,21 @@ class GraphWindowActions(AttrDict):
                                  icon=Icon.insert_chart,
                                  checkable=True,
                                  statustip='Insert a new model ')
+        self.loglinscale = Action(self.parent, "&Changement d'échelle",
+                                  self.parent.workflows.loglinscale_dialog,
+                                  icon=Icon.scaling,
+                                  checkable=True,
+                                  statustip="Permet de changer le type d'échelle" )
         self.auto_evaluate = Action(self.parent, "&Auto evaluate",
                                     self.parent.workflows.auto_evaluate,
                                     icon=Icon.auto_evaluate,
                                     checkable=True,
                                     statustip="Trouve la modélisation la plus adéquate")
+        self.add_bornes = Action(self.parent, "&Ajouter une borne",
+                                 self.parent.workflows.addBornes,
+                                 icon=Icon.bornes,
+                                 checkable=True,
+                                 statustip="Permet d'ajouter des bornes verticales ou horizontales")
     def figure_settings_actions(self):
         self.loglin = Action(self.parent, "&Changement d'échelle",
                              self.parent.graph.scaling,
