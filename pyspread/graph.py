@@ -76,7 +76,7 @@ class Graph(QWebEngineView):
         # data curves
         self.data_curves = []
         #bornes lines
-        self.bornes = []
+        self.bornes = [] # append( ["y = 5",5 )
 
         self.get_series()
         # getting all the figures on a reload
@@ -92,58 +92,28 @@ class Graph(QWebEngineView):
 
 
         self.allParameters = {
-            'polynomiale': [["Polynomiale", """ <style> div{ text-align:center} </style>
-                     <div>y = ax<sup>7</sup> + bx<sup>6</sup> + cx<sup>5</sup> + dx<sup>4</sup> + ex<sup>3</sup> + fx<sup>2</sup> +gx+ h </div>"""
+            'polynomiale': [["Polynomiale",r'$y = ax⁷ + bx⁶ +cx⁵ +dx⁴ +ex³ +fx² +gx +h$'
                              ], "a", "b", "c", "d", "e", "f", "g", "h"],
             'linéaire': [["Linéaire",
-                          """ <style> div{ text-align:center} </style>
-                          <div> y = ax </div>
-                          """], "a"],
-            'affine': [["Affine", "<style> div{ text-align:center} </style> <div> y = ax + b </div>"
+                          r'$y=ax$'],'a'],
+            'affine': [["Affine", r'$y=ax+b$'
                         ], "a", "b"],
-            'logarithme': [["Logarithme", " <style> div{ text-align:center} </style> <div> y = a*ln(x+b) </div>"
+            'logarithme': [["Logarithme", r'$y = aln(x+b)$'
                             ], "a", "b"],
-            'exponentiale': [["Exponentiel", " <style> div{ text-align:center} </style> <div>y = exp(a*x+b )</div>"
+            'exponentiale': [["Exponentiel", r'$y = exp(ax+b )$'
                               ], "a", "b"],
             'parabole': [
-                ["Parabole", "<style> div{ text-align:center} </style> <div> y = ax<sup>2</sup> + bx + c </div>"
+                ["Parabole", r'$y = ax² + bx + c$'
                  ], "a", "b", "c"],
             'sigmoïde': [["Sigmoïde",
-                          """
-                          <style> 
-                            div{text-align:center}
-                         </style>
-
-                          <div >
-                            <span>  1 </span> <br>
-                            <span> <b>-------------</b> </span> <br>
-                            <span > 1 + exp(-&lambda;(x - x<sub>0</sub>))</span>
-                          </div> 
-                          """
+                          r' $\frac{1}{1 + e^{-\lambda(x - x_{0})}}$'
                           ], "<span>&lambda;</span>", "x<sub>0</sub>"],
-            'michaelis': [["Michaelis", """<style> div{ text-align:center} </style> 
-                                                    <div>
-                                                        <span>  v<sub>max</sub> * x </span> <br>
-                                                        <span> <b>----------------</b> </span> <br>
-                                                        <span> K<sub>M</sub> + x </span>
-                                                    </div>"""
+            'michaelis': [["Michaelis", r'$\frac{v_{max}\times x}{K_{M}+x}$'
                            ], "v<sub>max</sub>", "K<sub>M</sub>"],
-            'gauss': [["Gauss", """<style> div{ text-align:center} sup{font-size:24px} </style> 
-                                          <div> <span>e<sup> -(x-&mu;)²/(2&sigma;²)</sup> </span> <br>
-                                                <span> <b> ------------------- </b> </span> <br>
-                                                <span> &sigma; &radic;( 2&pi;) </span>
-                                          </div>"""
+            'gauss': [["Gauss", r'$\frac{e^{\frac{-(x-\mu)²}{\sigma²}}}{2\sqrt{\sigma}}$'
                        ], "<span>&sigma;</span>", "<span>&mu;</span>"],
             'lorentz': [["Lorentz",
-                         """
-                         <style> div{text-align:center} </style> 
-                         <div>
-                            <span> &Gamma; </span><br>
-                            <span>----</span><br>
-                            <span>2&pi;</span><br>
-                            <span> ------------------------------- </span> <br>
-                            <span> &Gamma;²/4 + (x-x<sub>0</sub>)² </span> 
-                        </div>"""
+                         r'$\frac{\frac{\Gamma}{2\pi}}{\frac{\Gamma²}{4} + (x-x_{0})²}$'
                          ], "<span>&Gamma;</span>", "x<sub>0</sub>;"]
 
         }
@@ -232,6 +202,7 @@ class Graph(QWebEngineView):
         self.reload()
 
 
+
     def add_manual_modele(self,equation:str ,from_:int,to_:int):
 
 
@@ -258,6 +229,17 @@ class Graph(QWebEngineView):
         self.fig.add_traces(trace)
         self.reload()
 
+    def add_bornes(self,axis:str,where:int,perso_choices):
+        if axis =="x":
+            self.fig.add_vline(x=where,line_width=perso_choices[2], line_dash=perso_choices[1], line_color=perso_choices[0])
+            self.bornes.append([axis + " = " + str(where),axis,where,perso_choices])
+
+        elif axis =="y":
+            self.fig.add_hline(y=where,line_width=perso_choices[2], line_dash=perso_choices[1], line_color=perso_choices[0])
+            self.bornes.append([axis + " = " + str(where),axis,where,perso_choices])
+        self.reload()
+
+
     def scaling(self):
 
         if self.typeAxis =='linear':
@@ -277,6 +259,17 @@ class Graph(QWebEngineView):
         self.fig.update_yaxes(exponentformat='E')
         self.fig.update_xaxes(exponentformat='E')
         self.reload()
+
+    def scaling_disjoint(self,on_xaxis,on_yaxis):
+        self.fig.update_layout(
+            xaxis=go.layout.XAxis(type=on_xaxis),
+            yaxis=go.layout.YAxis(type=on_yaxis)
+        )
+        self.typeAxis = on_xaxis #putting one or the other do not matter, it's just to prevent the use of the normal scaling button
+        self.fig.update_yaxes(exponentformat='E')
+        self.fig.update_xaxes(exponentformat='E')
+        self.reload()
+
 
     def reload(self):
 
@@ -306,7 +299,11 @@ class Graph(QWebEngineView):
             self.fig.add_traces(self.data_curves[i][1])
 
         for i in range(len(self.bornes)):
-            self.fig.add_traces(self.bornes[i][1])
+            if self.bornes[i][1] == "x":
+                self.fig.add_hline(x=self.bornes[i][2],line_width=self.bornes[i][3][2], line_dash=self.bornes[i][3][1], line_color=self.bornes[i][3][0])
+            else:
+                self.fig.add_vline(x=self.bornes[i][2],line_width=self.bornes[i][3][2], line_dash=self.bornes[i][3][1], line_color=self.bornes[i][3][0])
+
 
         self.reload()
 

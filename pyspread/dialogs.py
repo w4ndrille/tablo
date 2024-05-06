@@ -68,10 +68,11 @@ from PyQt6.QtWidgets \
             QTextBrowser, QCheckBox, QGridLayout, QLayout, QHBoxLayout,
             QPushButton, QWidget, QComboBox, QTableView, QAbstractItemView,
             QPlainTextEdit, QToolBar, QMainWindow, QTabWidget, QInputDialog, QToolButton,QButtonGroup,
-            QStackedWidget, QStackedLayout, QErrorMessage, QColorDialog,QSpinBox)
+            QStackedWidget, QStackedLayout, QErrorMessage, QColorDialog,QSpinBox,QDoubleSpinBox)
 from PyQt6.QtGui \
     import (QIntValidator, QImageWriter, QStandardItemModel, QStandardItem,
-            QValidator, QWheelEvent,QTextDocument)
+            QValidator, QWheelEvent,QTextDocument, QFont)
+
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtPrintSupport import (QPrintPreviewDialog, QPrintPreviewWidget,
                                   QPrinter)
@@ -79,7 +80,7 @@ from PyQt6.QtPrintSupport import (QPrintPreviewDialog, QPrintPreviewWidget,
 from icons import Icon
 try:
     from matplotlib.figure import Figure
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 except ImportError:
     Figure = None
 
@@ -1251,9 +1252,9 @@ class CreateModel(QDialog):
         personalisationlayout.addLayout(widthLayout)
         ###
 
+        """On met l'équation ici"""
         parameterChoice = QVBoxLayout()
-        equationLabel = QLabel(self.allParameters[name.lower()][0][1])
-        equationLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        equationLabel = self.equationFrame(self.allParameters[name.lower()][0][1],name.lower())
         parameterChoice.addWidget(equationLabel)
 
         h1box = QHBoxLayout()
@@ -1295,6 +1296,36 @@ class CreateModel(QDialog):
 
         container.addLayout(self.main_layout)
 
+    def equationFrame(self,equation,name):
+        l = QVBoxLayout()
+        figure = Figure()
+        canvas = FigureCanvas(figure)
+        l.addWidget(canvas)
+        needFocusEquations = ["gauss","lorentz","michaelis","sigmoïde"]
+        if name  in needFocusEquations:
+            focusParam =3
+            y=0.8
+        elif name !="polynomiale" :
+            focusParam = 1.5
+            y=0.5
+        else:
+            focusParam = 1.3
+            y=0.5
+        figure.clear()
+
+        text = figure.suptitle(
+            equation,
+            size=QFont().pointSize()*focusParam,
+            y=y,
+            horizontalalignment='center',
+            verticalalignment='top', )
+        canvas.draw()
+        (x0, y0), (x1, y1) = text.get_window_extent().get_points()
+        w = x1 - x0
+        h = y1 - y0
+
+        figure.set_size_inches(w / 150, h /100 )
+        return canvas
     def evaluate(self,name:str):
         if  not self.parent.graph.evaluate(name) :
             QErrorMessage(self).showMessage("Erreur d'évaluation : Aucune donnée à évaluer")
@@ -1364,8 +1395,8 @@ class CreateModel(QDialog):
             QErrorMessage(self).showMessage("Erreur : entrée non numérique")
             return
 
-
-
+        print(name)
+        print(*np.array(parameters))
         self.parent.graph.add_common_modele(name,np.array(parameters),[rgbColor,choiceDash,widthChoice],from_,to_)
 
         self.close()
@@ -1660,6 +1691,230 @@ class DataAddDialog(QDialog):
         self.parent.graph.get_series(x,y,[rgbColor,choiceDash,widthChoice])
         self.close()
 
+
+class LoglinScaleDialog(QDialog):
+    def __init__(self,parent:QWidget):
+        super().__init__(parent)
+        self.parent = parent
+        self.resize(300,100)
+        self.setWindowTitle("Modifier les échelles")
+
+        self.xchoice ="linear"#default value
+        self.ychoice ="linear"
+
+        self.dialog_ui()
+
+        self.show()
+
+    def dialog_ui(self):
+        # Layout
+        self.layout = QVBoxLayout()
+
+        # The decision button
+        buttonlayout = QHBoxLayout()
+        self.button_box = self.create_buttonbox()
+        buttonlayout.addLayout(self.button_box)
+        buttonlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+
+        #sur X
+        xscale =  QComboBox()
+        xscale.setMinimumSize(150,25)
+        xscale.addItems(['linear','log'])
+        xscale.activated.connect(lambda : self.xscalechange(xscale))
+
+        xScale = QHBoxLayout()
+        xScale.addWidget(QLabel("Echelle en X : "))
+        xScale.addWidget(xscale)
+        #Sur y
+        yscale = QComboBox()
+        yscale.setMinimumSize(150, 25)
+        yscale.addItems(['linear', 'log'])
+        yscale.activated.connect(lambda: self.yscalechange(yscale))
+
+        yScale = QHBoxLayout()
+        yScale.addWidget(QLabel("Echelle en Y : "))
+        yScale.addWidget(yscale)
+
+        self.layout.addLayout(xScale)
+        self.layout.addLayout(yScale)
+        self.layout.addLayout(buttonlayout)
+        self.setLayout(self.layout)
+
+    def create_buttonbox(self):
+        """Returns a QDialogButtonBox with Ok and Cancel"""
+        button_box = QHBoxLayout()
+
+        acceptButton = QPushButton("Apply")
+        cancelButton = QPushButton("Cancel")
+
+        # Connect
+        acceptButton.clicked.connect(self.apply)
+        cancelButton.clicked.connect(self.reject)
+
+        button_box.addWidget(acceptButton)
+        button_box.addWidget(cancelButton)
+        return button_box
+
+    def xscalechange(self, comboBox: QComboBox):
+        self.xchoice = comboBox.currentText()
+    def yscalechange(self,comboBox:QComboBox):
+        self.ychoice = comboBox.currentText()
+    def apply(self):
+        self.parent.graph.scaling_disjoint(self.xchoice, self.ychoice)
+        self.close()
+
+
+class AddBornesDialog(QDialog):
+    def __init__(self,parent:QWidget):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.setWindowTitle("Ajouter une borne sur x ou y ")
+
+        self.rgbColor = None
+        self.choiceDash = None
+        self.widthChoice = None
+
+        #the parameters
+        self.axis ="x"
+        self.where = 0
+
+        self.dialog_ui()
+
+        self.show()
+
+
+    def dialog_ui(self):
+        # Layout
+        self.layout = QVBoxLayout()
+
+        # The decision button
+        buttonlayout = QHBoxLayout()
+        self.button_box = self.create_buttonbox()
+        buttonlayout.addLayout(self.button_box)
+        buttonlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+
+        ######################################################################################
+        # the configuration parameters
+        personalisationlayout = QVBoxLayout()
+        personalisationlayout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+        # color
+        self.colorButton = QPushButton("Pick a Color")
+        self.colorButton.setMinimumSize(150, 25)
+        self.colorButton.clicked.connect(self.colorChanged)
+        # colorLayout
+        colorLayout = QHBoxLayout()
+        colorLayout.addWidget(QLabel("Color : "))
+        colorLayout.addWidget(self.colorButton)
+        # dash
+        dashComboBox = QComboBox()
+        dashComboBox.setMinimumSize(150, 25)
+        dashComboBox.addItems(['solid', 'dot', 'dash', 'longdash', 'dashdot', 'longdashdot'])
+        dashComboBox.activated.connect(lambda: self.dashChanged(dashComboBox))
+        # dash layout
+        dashLayout = QHBoxLayout()
+        dashLayout.addWidget(QLabel("Type de lignes :"))
+        dashLayout.addWidget(dashComboBox)
+        # width
+        widthBox = QSpinBox()
+        widthBox.setMinimumSize(150, 25)
+        widthBox.setRange(1, 15)
+        widthBox.valueChanged.connect(lambda: self.widthChanged(widthBox))
+        # width Layout
+        widthLayout = QHBoxLayout()
+        widthLayout.addWidget(QLabel("Epaisseur de ligne: "))
+        widthLayout.addWidget(widthBox)
+        personalisationlayout.addLayout(colorLayout)
+        personalisationlayout.addLayout(dashLayout)
+        personalisationlayout.addLayout(widthLayout)
+        #########################################################################################
+
+        verticalLayout = QVBoxLayout()
+
+        where = QDoubleSpinBox()
+        where.textChanged.connect(lambda: self.whereChanged(where))
+        where.setSingleStep(0.01)
+        where.setMaximum(100000000.0)
+        where.setMinimum(-100000000.0)
+        whereLayout = QHBoxLayout()
+        whereLayout.addWidget(QLabel("Abscisse / ordonnée : "))
+        whereLayout.addWidget(where)
+
+
+
+        axis = QComboBox()
+        axis.addItems(["x","y"])
+        axis.activated.connect(lambda: self.xOrYChanged(axis))
+
+        axisLayout = QHBoxLayout()
+        axisLayout.addWidget(QLabel("Axe :"))
+        axisLayout.addWidget(axis)
+
+        verticalLayout.addLayout(axisLayout)
+        verticalLayout.addLayout(whereLayout)
+
+        persoLayout = QHBoxLayout()
+        persoLayout.addLayout(verticalLayout)
+        persoLayout.addLayout(personalisationlayout)
+        self.layout.addLayout(persoLayout)
+
+
+        self.layout.addLayout(buttonlayout)
+        self.setLayout(self.layout)
+
+    def xOrYChanged(self,box:QComboBox):
+        self.axis = box.currentText()
+    def whereChanged(self, where:QDoubleSpinBox):
+        self.where = where.value()
+    def colorChanged(self):
+        colorDialog = QColorDialog(self)
+        colorPick = colorDialog.getColor()
+        # c'est la valeur de rgb color qu'il faudra renvoyer
+        self.rgbColor = "rgb(" + str(colorPick.red()) + "," + str(colorPick.green()) + "," + str(colorPick.blue()) + ')'
+        # setting up the background like the chosen color to let the user know which color he pickec
+        self.colorButton.setStyleSheet("background-color:" + self.rgbColor)
+
+    def dashChanged(self, qcombobox: QComboBox):
+        self.choiceDash = qcombobox.currentText()
+
+    def widthChanged(self, spinBox: QSpinBox):
+        self.widthChoice = spinBox.value()
+
+    def create_buttonbox(self):
+        """Returns a QDialogButtonBox with Ok and Cancel"""
+        button_box = QHBoxLayout()
+
+        acceptButton = QPushButton("Apply")
+        cancelButton = QPushButton("Cancel")
+
+        # Connect
+        acceptButton.clicked.connect(self.apply)
+        cancelButton.clicked.connect(self.reject)
+
+        button_box.addWidget(acceptButton)
+        button_box.addWidget(cancelButton)
+        return button_box
+
+    def apply(self):
+        """Send all the parameters to plot the corresponding curve"""
+        # handling the case the user chose nothing
+        if self.rgbColor is None:
+            rgbColor = "rgb(255,0,0)"
+        else:
+            rgbColor = self.rgbColor
+        if self.choiceDash is None:
+            choiceDash = "solid"
+        else:
+            choiceDash = self.choiceDash
+        if self.widthChoice is None:
+            widthChoice = 1
+        else:
+            widthChoice = self.widthChoice
+
+
+        self.parent.graph.add_bornes(self.axis,self.where,[rgbColor,choiceDash,widthChoice])
+
+        self.close()
 
 
 class CsvParameterGroupBox(QGroupBox):

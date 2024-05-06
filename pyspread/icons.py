@@ -220,9 +220,10 @@ class IconPath:
 
     #Scaling settings
     scaling = ACTION_PATH / 'scaling.svg'
-
+    bornes = ACTION_PATH / 'bornes.svg'
     #deleting curve
     delete_curve = ACTION_PATH / 'delete.svg'
+
 class IconConverter(type):
     """Meta class that provides QIcons for IconPaths icons"""
 

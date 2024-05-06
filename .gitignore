@@ -26,3 +26,11 @@ public/
 # coverage
 *.coverage
 htmlcov
+
+
+# Fichier ajouter par PyCharm dont on a pas forcément besoin
+.idea
+
+# Fichier ajouter par Mac dont on a pas forcément besoin
+.DS_Store
+
