@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-APP_NAME = "pyspread"
+APP_NAME = "tablo"
 
-# Current pyspread version
+# Current tablo version
 
-VERSION = "2.3-beta.1"
+VERSION = "0.1"

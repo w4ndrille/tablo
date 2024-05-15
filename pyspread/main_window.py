@@ -1,23 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# Copyright Martin Manns
 # Distributed under the terms of the GNU General Public License
 
-# --------------------------------------------------------------------
-# pyspread is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# pyspread is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with pyspread.  If not, see <http://www.gnu.org/licenses/>.
-# --------------------------------------------------------------------
 
 """
 
@@ -40,7 +25,7 @@ from pathlib import Path
 from PyQt6.QtCore import Qt, pyqtSignal, QEvent, QTimer, QRectF
 from PyQt6.QtWidgets import (QWidget, QMainWindow, QApplication,
                              QMessageBox, QDockWidget, QVBoxLayout,
-                             QStyleOptionViewItem, QSplitter)
+                             QStyleOptionViewItem, QSplitter, QTabWidget)
 try:
     from PyQt6.QtSvgWidgets import QSvgWidget
 except ImportError:
@@ -158,6 +143,27 @@ class MainWindow(QMainWindow):
                 msg = f"File '{filepath}' could not be opened."
                 self.statusBar().showMessage(msg)
 
+
+
+        # tabs
+        self.tabs = QTabWidget()
+        self.tab_widget = QTabWidget(self)
+
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+
+        self.tab_widget.addTab(self.tab1, "Tab 1")
+        self.tab_widget.addTab(self.tab2, "Tab 2")
+
+        self.tab1_layout = QVBoxLayout(self.tab1)
+        self.tab2_layout = QVBoxLayout(self.tab2)
+
+        # Add widgets to the tabs here
+        # self.tab1_layout.addWidget(...)
+        # self.tab2_layout.addWidget(...)
+
+
+
     def _init_window(self):
         """Initialize main window components"""
 
@@ -198,7 +204,6 @@ class MainWindow(QMainWindow):
 
         if self._loading:
             return
-
         super().resizeEvent(event)
 
     def closeEvent(self, event: QEvent = None):
@@ -275,6 +280,9 @@ class MainWindow(QMainWindow):
         self.widgets.font_size_combo.fontSizeChanged.connect(
             self.grid.on_font_size)
 
+        
+
+
     def _layout(self):
         """Layouts for main window"""
 
@@ -295,6 +303,9 @@ class MainWindow(QMainWindow):
 
         self.main_panel.setLayout(self.central_layout)
         self.setCentralWidget(self.main_panel)
+
+        
+
 
     def eventFilter(self, source: QWidget, event: QEvent) -> bool:
         """Overloaded event filter for handling QDockWidget close events
@@ -322,13 +333,13 @@ class MainWindow(QMainWindow):
         self.main_toolbar = MainToolBar(self)
         self.macro_toolbar = MacroToolbar(self)
         self.find_toolbar = FindToolbar(self)
-        self.format_toolbar = FormatToolbar(self)
+        # self.format_toolbar = FormatToolbar(self)
 
         self.addToolBar(self.main_toolbar)
         self.addToolBar(self.macro_toolbar)
         self.addToolBar(self.find_toolbar)
         self.addToolBarBreak()
-        self.addToolBar(self.format_toolbar)
+        # self.addToolBar(self.format_toolbar)
 
     def update_action_toggles(self):
         """Updates the toggle menu check states"""
@@ -341,8 +352,8 @@ class MainWindow(QMainWindow):
         macrotoolbar_visible = self.macro_toolbar.isVisibleTo(self)
         actions.toggle_macro_toolbar.setChecked(macrotoolbar_visible)
 
-        formattoolbar_visible = self.format_toolbar.isVisibleTo(self)
-        actions.toggle_format_toolbar.setChecked(formattoolbar_visible)
+        # formattoolbar_visible = self.format_toolbar.isVisibleTo(self)
+        # actions.toggle_format_toolbar.setChecked(formattoolbar_visible)
 
         findtoolbar_visible = self.find_toolbar.isVisibleTo(self)
         actions.toggle_find_toolbar.setChecked(findtoolbar_visible)
@@ -768,14 +779,14 @@ class MainWindow(QMainWindow):
         if border_action is not None:
             icon = border_action.icon()
             menubar.format_menu.border_submenu.setIcon(icon)
-            self.format_toolbar.border_menu_button.setIcon(icon)
+            # self.format_toolbar.border_menu_button.setIcon(icon)
 
         border_width_action = \
             self.main_window_actions.border_width_group.checkedAction()
         if border_width_action is not None:
             icon = border_width_action.icon()
             menubar.format_menu.line_width_submenu.setIcon(icon)
-            self.format_toolbar.line_width_button.setIcon(icon)
+            # self.format_toolbar.line_width_button.setIcon(icon)
 
         if attributes.textcolor is None:
             text_color = self.grid.palette().color(QPalette.ColorRole.Text)
