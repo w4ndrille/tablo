@@ -1,25 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Copyright Martin Manns
 # Distributed under the terms of the GNU General Public License
 
-# --------------------------------------------------------------------
-# pyspread is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# pyspread is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with pyspread.  If not, see <http://www.gnu.org/licenses/>.
-# --------------------------------------------------------------------
-
 """
-
 **Provides**
 
 * :class:`MenuBar`: QMenuBar, the main menubar
@@ -32,7 +15,6 @@
 * :class:`FileHistoryMenu`: Menu showing recent files
 * :class:`BorderChoiceMenu`: QMenu for choosing cell borders
 * :class:`BorderWidthMenu`: QMenu for choosing the cell border width
-
 """
 
 from functools import partial
@@ -75,17 +57,14 @@ class MenuBar(QMenuBar):
         self.format_menu = FormatMenu(self, actions)
         self.macro_menu = MacroMenu(self, actions)
         self.help_menu = HelpMenu(self, actions)
-
-        """Menu personnalisé"""
-        self.graph_menu = GraphMenu(self, actions)
+        self.graph_menu = GraphMenu(self, actions) # Menu ajouté à pyspread avec tablo
 
         self.addMenu(self.file_menu)
         self.addMenu(self.edit_menu)
         self.addMenu(self.view_menu)
         self.addMenu(self.format_menu)
         self.addMenu(self.macro_menu)
-        """On met notre menu avant le menu aide"""
-        self.addMenu(self.graph_menu)
+        self.addMenu(self.graph_menu) # Menu ajouté à pyspread avec tablo
 
         self.addMenu(self.help_menu)
 

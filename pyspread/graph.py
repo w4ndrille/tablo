@@ -142,7 +142,7 @@ class Graph(QWebEngineView):
         Getting the curve from X col and Y col
         """
         max = self.model.shape[0] # it matches the maximum row index
-        inc = 1 #start at 1 to avoid getting the physical meaning of the column
+        inc = 1 # start at 1 to avoid getting the physical meaning of the column
 
 
         while inc < max :
