@@ -21,7 +21,7 @@ from PyQt6.QtCore \
             QRect, QRectF, QItemSelectionModel, QObject, QAbstractItemModel,
             QByteArray, pyqtSignal)
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from lib.attrdict import AttrDict
+
 #import graphiques
 
 import numpy as np
@@ -110,7 +110,7 @@ class Graph(QWebEngineView):
                           ], "<span>&lambda;</span>", "x<sub>0</sub>"],
             'michaelis': [["Michaelis", r'$\frac{v_{max}\times x}{K_{M}+x}$'
                            ], "v<sub>max</sub>", "K<sub>M</sub>"],
-            'gauss': [["Gauss", r'$\frac{e^{\frac{-(x-\mu)²}{\sigma²}}}{2\sqrt{\sigma}}$'
+            'gauss': [["Gauss", r'$\frac{e^{\frac{-(x-\mu)²}{2\sigma²}}}{\sigma\sqrt{2\pi}}$'
                        ], "<span>&sigma;</span>", "<span>&mu;</span>"],
             'lorentz': [["Lorentz",
                          r'$\frac{\frac{\Gamma}{2\pi}}{\frac{\Gamma²}{4} + (x-x_{0})²}$'
