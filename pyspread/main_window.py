@@ -162,8 +162,6 @@ class MainWindow(QMainWindow):
         # self.tab1_layout.addWidget(...)
         # self.tab2_layout.addWidget(...)
 
-
-
     def _init_window(self):
         """Initialize main window components"""
 
@@ -280,9 +278,6 @@ class MainWindow(QMainWindow):
         self.widgets.font_size_combo.fontSizeChanged.connect(
             self.grid.on_font_size)
 
-        
-
-
     def _layout(self):
         """Layouts for main window"""
 
@@ -303,9 +298,6 @@ class MainWindow(QMainWindow):
 
         self.main_panel.setLayout(self.central_layout)
         self.setCentralWidget(self.main_panel)
-
-        
-
 
     def eventFilter(self, source: QWidget, event: QEvent) -> bool:
         """Overloaded event filter for handling QDockWidget close events
@@ -338,7 +330,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(self.main_toolbar)
         self.addToolBar(self.macro_toolbar)
         self.addToolBar(self.find_toolbar)
-        self.addToolBarBreak()
+        # self.addToolBarBreak()
         # self.addToolBar(self.format_toolbar)
 
     def update_action_toggles(self):

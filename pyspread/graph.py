@@ -89,8 +89,6 @@ class Graph(QWebEngineView):
             self.rebuild()
 
 
-
-
         self.allParameters = {
             'polynomiale': [["Polynomiale",r'$y = ax⁷ + bx⁶ +cx⁵ +dx⁴ +ex³ +fx² +gx +h$'
                              ], "a", "b", "c", "d", "e", "f", "g", "h"],
@@ -115,11 +113,9 @@ class Graph(QWebEngineView):
             'lorentz': [["Lorentz",
                          r'$\frac{\frac{\Gamma}{2\pi}}{\frac{\Gamma²}{4} + (x-x_{0})²}$'
                          ], "<span>&Gamma;</span>", "x<sub>0</sub>;"]
-
         }
 
         # a dict which contains all the possible functions to avoid the switch / infitite else if case
-
         self.functionDict = {
             'polynomiale': self.polynomiale,
             'linéaire': self.linear,
@@ -132,10 +128,6 @@ class Graph(QWebEngineView):
             'gauss': self.gauss,
             'lorentz': self.lorentz
         }
-
-
-
-
 
     def get_series(self, colIndexX :int = 0,colIndexY :int =1,parameters = None):
         """
@@ -163,7 +155,6 @@ class Graph(QWebEngineView):
         if len(self.xValues) > 0:
             self.data_curve(parameters,colIndexX,colIndexY)
 
-
     def rebuild(self):
 
         self.fig = go.Figure()#redefining the figure
@@ -180,16 +171,19 @@ class Graph(QWebEngineView):
 
         self.reload()
 
-
     def data_curve(self,parameters,colIndexX,colIndexY):
         """
         Update the chart with all the series
         """
         if parameters is None:
-            self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX]))
-            self.data_curves.append([self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0])])
+            self.fig.add_traces(go.Scatter(x=self.xValues,
+                y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX]))
+            self.data_curves.append([self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],
+                go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[1] + " en fonction " + self.axisLabels[0])])
         else:
-            self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],line=go.scatter.Line(color=parameters[0],dash=parameters[1],width=parameters[2])))
+            self.fig.add_traces(go.Scatter(x=self.xValues,y=self.yValues,
+                name=self.axisLabels[colIndexY] + " en fonction " + self.axisLabels[colIndexX],
+                line=go.scatter.Line(color=parameters[0],dash=parameters[1],width=parameters[2])))
         #Pour ajouter les légends
         self.fig.update_layout(
             xaxis_title=self.axisLabels[0],
@@ -200,8 +194,6 @@ class Graph(QWebEngineView):
         self.fig.update_yaxes(exponentformat='E')
 
         self.reload()
-
-
 
     def add_manual_modele(self,equation:str ,from_:int,to_:int):
 
@@ -351,8 +343,6 @@ class Graph(QWebEngineView):
             self.parent.showParameters.show()
 
             return True
-
-
 
     def auto_evaluate(self):
         #try every function to chose the better one with the pcov parameters
