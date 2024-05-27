@@ -144,6 +144,8 @@ class Graph(QWebEngineView):
         max = self.model.shape[0] # it matches the maximum row index
         inc = 1 #start at 1 to avoid getting the physical meaning of the column
 
+        self.xValues = []
+        self.yValues = []
 
         while inc < max :
             x = self.model.index(inc,colIndexX).data()
@@ -272,7 +274,6 @@ class Graph(QWebEngineView):
 
 
     def reload(self):
-
         self.chart = "<html><body>"
         self.chart += plotly.offline.plot(self.fig, output_type='div', include_plotlyjs='cdn')
         self.chart += "</body></html>"
@@ -308,8 +309,7 @@ class Graph(QWebEngineView):
         self.reload()
 
     def evaluate(self, name:str):
-
-
+        
         # testing if there is  data
         if self.xValues ==  [] or self.yValues == [] :
             return False
@@ -363,8 +363,6 @@ class Graph(QWebEngineView):
             return False
         else:
             for fct in self.functionDict.keys():
-
-
                 # getting the optimal parameters and the covariance matrix
                  if fct =="logarithme" and min(self.xValues) <= 0 :
                     continue
@@ -380,7 +378,6 @@ class Graph(QWebEngineView):
                      print("impossibilité de calculer la variance")
 
                  all_variances[fct] =sqrt(diag(pcov))
-
 
                  sum = 0
                  for var in sqrt(diag(pcov)):

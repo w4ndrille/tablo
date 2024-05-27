@@ -902,6 +902,7 @@ class ShowParametersWidget(QWidget):
 
         figure.set_size_inches(w / 150, h / 100)
         return canvas
+
     def setParameters(self, name:str,popt,pvar):
         self.reset()
         """
