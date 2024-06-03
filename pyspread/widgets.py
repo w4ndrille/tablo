@@ -872,7 +872,6 @@ class ShowParametersWidget(QWidget):
         else:
             focusParam = 1.3
             y = 0.5
-        figure.clear()
 
         text = figure.suptitle(
             equation,
@@ -880,6 +879,9 @@ class ShowParametersWidget(QWidget):
             y=y,
             horizontalalignment='center',
             verticalalignment='top', )
+
+        QLabel()
+
         canvas.draw()
         (x0, y0), (x1, y1) = text.get_window_extent().get_points()
         w = x1 - x0
@@ -887,6 +889,7 @@ class ShowParametersWidget(QWidget):
 
         figure.set_size_inches(w / 150, h / 100)
         return canvas
+
     def setParameters(self, name:str,popt,pvar):
         self.reset()
         """
